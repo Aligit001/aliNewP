@@ -1,7 +1,7 @@
 name: Get Unity License 💡
 
 on: 
-  workflow_dispatch: # يسمح لك بتشغيله يدوياً بضغطة زر
+  workflow_dispatch:
 
 jobs:
   activation:
@@ -12,13 +12,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Request activation file
-        uses: game-ci/unity-request-activation-file@v2
+        uses: game-ci/unity-request-activation-file@v2.3 # تحديث الإصدار
         id: get-alf
-        with:
-          unityVersion: 6000.4.0f1 # نسختك الحالية بدقة
+        # ملاحظة: في النسخ الجديدة تم دمج المتغيرات تلقائياً
+        # إذا استمر الخطأ، اترك خانة with فارغة وسيكتشف النسخة من ProjectSettings
 
       - name: Upload .alf file
         uses: actions/upload-artifact@v4
         with:
-          name: Unity_v6000.4.0f1.alf
+          name: Unity_v6000_Activation
           path: ${{ steps.get-alf.outputs.filePath }}
