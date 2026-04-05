@@ -1,14 +1,20 @@
 name: Unity Build iOS 🚀
 
-on: [workflow_dispatch, push]
+on: 
+  workflow_dispatch: # لتشغيل البناء يدوياً بضغطة زر
+  push:
+    branches:
+      - main # يعمل تلقائياً عند الرفع لفرع main
 
 jobs:
   build:
-    name: Build Project 🍏
+    name: Build for iOS 🍏
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          lfs: true # تفعيل الـ LFS لضمان تحميل الملفات الكبيرة
 
       - name: Unity - Builder
         uses: game-ci/unity-builder@v4
@@ -19,6 +25,8 @@ jobs:
         with:
           targetPlatform: iOS
           version: 6000.4.0f1
+          # هذا السطر يضمن استخدام إعدادات الـ Build Profile التي ضبطناها
+          buildMethod: UnityEditor.Build.BuildPipeline.BuildPlayer 
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
