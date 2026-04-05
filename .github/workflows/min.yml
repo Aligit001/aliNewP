@@ -4,7 +4,7 @@ on: [workflow_dispatch, push]
 
 jobs:
   build:
-    runs-on: macos-15-arm64 # النسخة التي ظهرت في سجل العمليات عندك
+runs-on: macos-latest # استخدم latest بدلاً من رقم محدد لتسريع إيجاد سيرفر متاح
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
