@@ -1,14 +1,9 @@
-name: Unity Build iOS 🚀
+name: Generate Final IPA 🚀
 
-on: 
-  workflow_dispatch: 
-  push:
-    branches:
-      - main
+on: [workflow_dispatch, push]
 
 jobs:
   build:
-    name: Build for iOS 🍏
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -16,6 +11,14 @@ jobs:
         with:
           lfs: true
 
+      # 1. فك تشفير الشهادة وتركيبها في السيرفر
+      - name: Install SideStore Certificate 🔑
+        uses: apple-actions/import-codesigning-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.P12_BASE64 }}
+          p12-password: ${{ secrets.P12_PASSWORD }}
+
+      # 2. بناء المشروع (عملية الـ Build)
       - name: Unity - Builder
         uses: game-ci/unity-builder@v4
         env:
@@ -25,11 +28,19 @@ jobs:
         with:
           targetPlatform: iOS
           version: 6000.4.0f1
-          # هذا السطر مهم جداً لـ Unity 6 لكي لا يبحث عن مشاهد مفقودة
-          allowDirtyBuild: true 
 
-      - name: Upload Artifact
+      # 3. تحويل مخرجات Xcode إلى ملف IPA (الخطوة السحرية)
+      - name: Create IPA File 📦
+        run: |
+          mkdir -p build/iOS/Payload
+          # نسخ التطبيق المستخرج إلى مجلد Payload ليصبح IPA
+          find build/iOS -name "*.app" -exec cp -r {} build/iOS/Payload/ \;
+          cd build/iOS && zip -r AliGhanam_Game.ipa Payload
+
+      # 4. رفع الملفين (الـ Zip القديم والـ IPA الجديد)
+      - name: Upload Results 🚀
         uses: actions/upload-artifact@v4
         with:
-          name: iOS-Xcode-Project
-          path: build/iOS
+          name: iOS-Build-Package
+          path: |
+            build/iOS/AliGhanam_Game.ipa
