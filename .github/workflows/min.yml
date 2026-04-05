@@ -1,0 +1,27 @@
+name: Unity Build iOS 🚀
+
+on: [workflow_dispatch, push]
+
+jobs:
+  build:
+    name: Build Project 🍏
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Unity - Builder
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: iOS
+          version: 6000.4.0f1
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS-Xcode-Project
+          path: build/iOS
