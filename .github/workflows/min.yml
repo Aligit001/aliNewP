@@ -11,24 +11,23 @@ jobs:
         with:
           lfs: true
 
-      # 1. فك تشفير الشهادة وتركيبها يدوياً (بدون أداة خارجية)
-      - name: Install SideStore Certificate 🔑
+            - name: Install SideStore Certificate 🔑
         env:
           P12_BASE64: ${{ secrets.P12_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         run: |
-          # إنشاء ملف p12 مؤقت من النص اللي وضعته في السكرت
-          echo $P12_BASE64 | base64 --decode > certificate.p12
+          # فك التشفير مع تجاهل أي أسطر فارغة
+          echo "${P12_BASE64}" | base64 --decode > certificate.p12
           
-          # إنشاء Keychain جديد للسيرفر
           security create-keychain -p "" build.keychain
           security list-keychains -s build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
           
-          # استيراد الشهادة
-          security import certificate.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          # استيراد الشهادة مع معالجة كلمة السر
+          security import certificate.p12 -k build.keychain -P "${P12_PASSWORD}" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+
 
       # 2. بناء المشروع بواسطة Unity
       - name: Unity - Builder
