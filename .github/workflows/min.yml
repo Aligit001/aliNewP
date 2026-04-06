@@ -23,13 +23,12 @@ jobs:
           targetPlatform: iOS
           version: 6000.4.0f1
 
-      # 2. تجميع المشروع ليصبح تطبيق (.app)
+            # 2. تجميع المشروع ليصبح تطبيق (.app)
       - name: Compile Xcode Project 🔨
         run: |
-          # البحث عن المشروع الأساسي (تجنب مجلد Pods)
+          # البحث عن المشروع الأساسي
           PROJECT_FILE=$(find build/iOS -name "Unity-iPhone.xcodeproj" | head -n 1)
           
-          # إذا لم يجد الاسم الافتراضي، يبحث عن أي مشروع ليس داخل مجلد Pods
           if [ -z "$PROJECT_FILE" ]; then
             PROJECT_FILE=$(find build/iOS -name "*.xcodeproj" -not -path "*/Pods/*" | head -n 1)
           fi
@@ -38,11 +37,19 @@ jobs:
           cd "$PROJECT_DIR"
           echo "Building in: $(pwd)"
           
-          # اسم المشروع الأساسي
           PROJ_NAME=$(basename "$PROJECT_FILE" .xcodeproj)
           
-          # تنفيذ بناء المشروع الأساسي
-          xcodebuild -project "$PROJ_NAME.xcodeproj" -scheme "$PROJ_NAME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
+          # إضافة إعدادات إضافية لتجاوز خطأ التبعية (Dependency error)
+          xcodebuild -project "$PROJ_NAME.xcodeproj" \
+            -scheme "$PROJ_NAME" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            COMPILATION_MODE=singlefile \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
           
       # 3. تحويل التطبيق إلى ملف IPA جاهز
       - name: Create IPA File 📦
