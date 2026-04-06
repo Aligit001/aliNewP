@@ -1,35 +1,35 @@
-name: Generate Final IPA 🚀
+name: Unity iOS Final Build 🚀
 
 on: [workflow_dispatch, push]
 
 jobs:
   build:
-    runs-on: macos-latest 
+    name: Build and Sign 🍏
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           lfs: true
 
+      # 1. تنظيف وتركيب الشهادة (استخدام كلمة السر Ali مباشرة)
       - name: Install SideStore Certificate 🔑
         env:
           P12_BASE64: ${{ secrets.P12_BASE64 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         run: |
-          # تحويل النص لملف
-          echo "${P12_BASE64}" | base64 --decode > certificate.p12
+          # فك التشفير مع حذف أي أسطر زائدة (BEGIN/END) أو مسافات
+          echo "$P12_BASE64" | sed 's/-----BEGIN CERTIFICATE-----//g' | sed 's/-----END CERTIFICATE-----//g' | tr -d '\n ' | base64 --decode > certificate.p12
           
           # إنشاء مخزن المفاتيح
           security create-keychain -p "buildpass" build.keychain
           security unlock-keychain -p "buildpass" build.keychain
           
-          # استيراد الشهادة باستخدام متغير البيئة مباشرة
-          security import certificate.p12 -k build.keychain -P "$P12_PASSWORD" -A
+          # استيراد الشهادة بكلمة السر التي حددتها "Ali"
+          security import certificate.p12 -k build.keychain -P "Ali" -A
           
           security list-keychains -s build.keychain
           security default-keychain -s build.keychain
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "buildpass" build.keychain
-
 
       # 2. بناء المشروع بواسطة Unity
       - name: Unity - Builder
@@ -42,17 +42,22 @@ jobs:
           targetPlatform: iOS
           version: 6000.4.0f1
 
-      # 3. تحويل مخرجات Xcode إلى ملف IPA
-      - name: Create IPA File 📦
+      # 3. تجهيز ملف الـ IPA وهيكل Xcode
+      - name: Prepare Output 📦
         run: |
+          # إنشاء ملف IPA
           mkdir -p build/iOS/Payload
-          # البحث عن ملف الـ .app الناتج
           find build/iOS -name "*.app" -exec cp -r {} build/iOS/Payload/ \;
           cd build/iOS && zip -r AliGhanam_Game.ipa Payload
+          cd ../..
+          # ضغط مشروع Xcode كاحتياط
+          zip -r Xcode_Project.zip build/iOS
 
-      # 4. رفع الـ IPA النهائي
-      - name: Upload Result 🚀
+      # 4. رفع النتائج النهائية
+      - name: Upload Results 🚀
         uses: actions/upload-artifact@v4
         with:
-          name: AliGhanam-IPA
-          path: build/iOS/AliGhanam_Game.ipa
+          name: Game-Build-Files
+          path: |
+            build/iOS/AliGhanam_Game.ipa
+            Xcode_Project.zip
