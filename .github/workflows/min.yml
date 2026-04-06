@@ -23,13 +23,19 @@ jobs:
           targetPlatform: iOS
           version: 6000.4.0f1
 
-      # 2. تجميع المشروع ليصبح تطبيق (.app) بدون شهادات
+      # 2. تجميع المشروع ليصبح تطبيق (.app)
       - name: Compile Xcode Project 🔨
         run: |
-          # الدخول للمسار المباشر للمشروع بناءً على سجلات السيرفر
-          cd build/iOS/Unity-iPhone
+          # البحث عن مكان ملف .xcodeproj والدخول لمجلده تلقائياً
+          PROJECT_FILE=$(find build/iOS -name "*.xcodeproj" | head -n 1)
+          PROJECT_DIR=$(dirname "$PROJECT_FILE")
+          cd "$PROJECT_DIR"
           echo "Building in: $(pwd)"
-          xcodebuild -project Unity-iPhone.xcodeproj -scheme Unity-iPhone -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
+          
+          # استخراج اسم المشروع بدون الامتداد
+          PROJ_NAME=$(basename "$PROJECT_FILE" .xcodeproj)
+          
+          xcodebuild -project "$PROJ_NAME.xcodeproj" -scheme "$PROJ_NAME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
           
       # 3. تحويل التطبيق إلى ملف IPA جاهز
       - name: Create IPA File 📦
