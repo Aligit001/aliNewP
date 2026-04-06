@@ -1,4 +1,4 @@
-name: Unity iOS Structure Build 🚀
+name: Unity iOS Unsigned Build 🚀
 
 on: [workflow_dispatch, push]
 
@@ -12,7 +12,7 @@ jobs:
         with:
           lfs: true
 
-      # 1. بناء المشروع بواسطة Unity (بدون توقيع)
+      # 1. تصدير هيكل المشروع من يونيتي
       - name: Unity - Builder
         uses: game-ci/unity-builder@v4
         env:
@@ -23,15 +23,24 @@ jobs:
           targetPlatform: iOS
           version: 6000.4.0f1
 
-      # 2. ضغط هيكل Xcode الناتج
-      - name: Zip Xcode Project 📦
+      # 2. تجميع المشروع ليصبح تطبيق (.app) بدون شهادات
+      - name: Compile Xcode Project 🔨
         run: |
-          zip -r Xcode_Project.zip build/iOS
-
-      # 3. رفع الملف الناتج لـ GitHub
-          # هذا الملف هو ما سنستخدمه للتثبيت
-      - name: Upload Artifact 🚀
+          cd build/iOS
+          xcodebuild -project Unity-iPhone.xcodeproj -scheme Unity-iPhone -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
+          
+      # 3. تحويل التطبيق إلى ملف IPA جاهز
+      - name: Create IPA File 📦
+        run: |
+          mkdir -p Payload
+          # البحث عن التطبيق ونقله لمجلد Payload
+          find build/iOS -name "*.app" -exec cp -r {} Payload/ \;
+          # ضغط الملف وتغيير صيغته
+          zip -r AliGame.ipa Payload
+          
+      # 4. رفع الملف النهائي لك
+      - name: Upload Final IPA 🚀
         uses: actions/upload-artifact@v4
         with:
-          name: Unity-Xcode-Output
-          path: Xcode_Project.zip
+          name: Final-Game-IPA
+          path: AliGame.ipa
