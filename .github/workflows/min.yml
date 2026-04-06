@@ -26,23 +26,30 @@ jobs:
       # 2. تجميع المشروع ليصبح تطبيق (.app)
       - name: Compile Xcode Project 🔨
         run: |
-          # البحث عن مكان ملف .xcodeproj والدخول لمجلده تلقائياً
-          PROJECT_FILE=$(find build/iOS -name "*.xcodeproj" | head -n 1)
+          # البحث عن المشروع الأساسي (تجنب مجلد Pods)
+          PROJECT_FILE=$(find build/iOS -name "Unity-iPhone.xcodeproj" | head -n 1)
+          
+          # إذا لم يجد الاسم الافتراضي، يبحث عن أي مشروع ليس داخل مجلد Pods
+          if [ -z "$PROJECT_FILE" ]; then
+            PROJECT_FILE=$(find build/iOS -name "*.xcodeproj" -not -path "*/Pods/*" | head -n 1)
+          fi
+          
           PROJECT_DIR=$(dirname "$PROJECT_FILE")
           cd "$PROJECT_DIR"
           echo "Building in: $(pwd)"
           
-          # استخراج اسم المشروع بدون الامتداد
+          # اسم المشروع الأساسي
           PROJ_NAME=$(basename "$PROJECT_FILE" .xcodeproj)
           
+          # تنفيذ بناء المشروع الأساسي
           xcodebuild -project "$PROJ_NAME.xcodeproj" -scheme "$PROJ_NAME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
           
       # 3. تحويل التطبيق إلى ملف IPA جاهز
       - name: Create IPA File 📦
         run: |
           mkdir -p Payload
-          # البحث عن ملف الـ .app ونقله لمجلد Payload
-          find build/iOS -name "*.app" -type d -exec cp -r {} Payload/ \;
+          # البحث عن ملف الـ .app الناتج (تجنب ملفات الـ Pods)
+          find build/iOS -name "*.app" -type d -not -path "*/Pods/*" -exec cp -r {} Payload/ \;
           # ضغط المجلد بصيغة IPA
           zip -r AliGame.ipa Payload
           
