@@ -26,9 +26,8 @@ jobs:
       # 2. تجميع المشروع ليصبح تطبيق (.app) بدون شهادات
       - name: Compile Xcode Project 🔨
         run: |
-          # البحث عن ملف المشروع والدخول للمجلد الموجود فيه تلقائياً
-          PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -parent | head -n 1)
-          cd "$PROJ_PATH"
+          # الدخول للمسار المباشر للمشروع بناءً على سجلات السيرفر
+          cd build/iOS/Unity-iPhone
           echo "Building in: $(pwd)"
           xcodebuild -project Unity-iPhone.xcodeproj -scheme Unity-iPhone -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
           
@@ -36,9 +35,9 @@ jobs:
       - name: Create IPA File 📦
         run: |
           mkdir -p Payload
-          # البحث عن ملف .app الذي تم بناؤه ونقله لمجلد Payload
+          # البحث عن ملف الـ .app ونقله لمجلد Payload
           find build/iOS -name "*.app" -type d -exec cp -r {} Payload/ \;
-          # ضغط المجلد ليصبح IPA
+          # ضغط المجلد بصيغة IPA
           zip -r AliGame.ipa Payload
           
       # 4. رفع الملف النهائي لك
