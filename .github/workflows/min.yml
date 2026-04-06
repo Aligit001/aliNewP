@@ -16,17 +16,19 @@ jobs:
           P12_BASE64: ${{ secrets.P12_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         run: |
-          # فك التشفير مع تجاهل أي أسطر فارغة
+          # تحويل النص لملف
           echo "${P12_BASE64}" | base64 --decode > certificate.p12
           
-          security create-keychain -p "" build.keychain
+          # إنشاء مخزن المفاتيح
+          security create-keychain -p "buildpass" build.keychain
+          security unlock-keychain -p "buildpass" build.keychain
+          
+          # استيراد الشهادة باستخدام متغير البيئة مباشرة
+          security import certificate.p12 -k build.keychain -P "$P12_PASSWORD" -A
+          
           security list-keychains -s build.keychain
           security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          
-          # استيراد الشهادة مع معالجة كلمة السر
-          security import certificate.p12 -k build.keychain -P "${P12_PASSWORD}" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "buildpass" build.keychain
 
 
       # 2. بناء المشروع بواسطة Unity
