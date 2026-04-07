@@ -1,16 +1,23 @@
-name: Unity Build iOS 🚀
+name: Unity iOS Professional Build 🚀
 
-on: [workflow_dispatch, push]
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    name: Build Project 🍏
+    name: Build iOS Project 🍏
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
-      - name: Unity - Builder
+      # 1. تصدير هيكل المشروع من يونيتي
+      - name: Unity - Builder 🏗️
         uses: game-ci/unity-builder@v4
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -20,8 +27,63 @@ jobs:
           targetPlatform: iOS
           version: 6000.4.0f1
 
-      - name: Upload Artifact
+      # 2. تجهيز المكتبات (CocoaPods) إذا كانت موجودة
+      - name: Install CocoaPods 📦
+        run: |
+          PODFILE_PATH=$(find . -name "Podfile" | head -n 1)
+          if [ -n "$PODFILE_PATH" ]; then
+            echo "Podfile found at: $PODFILE_PATH"
+            cd $(dirname "$PODFILE_PATH")
+            pod install
+          else
+            echo "No Podfile found, skipping..."
+          fi
+
+      # 3. تجميع المشروع ليصبح تطبيق (.app)
+      - name: Compile Xcode Project 🔨
+        run: |
+          # البحث عن ملف المشروع أينما وجد بعد تصدير يونيتي
+          XCODE_PROJ=$(find . -name "Unity-iPhone.xcodeproj" | head -n 1)
+          cd $(dirname "$XCODE_PROJ")
+          echo "Building in: $(pwd)"
+          
+          if [ -d "Unity-iPhone.xcworkspace" ]; then
+            TARGET="-workspace Unity-iPhone.xcworkspace"
+          else
+            TARGET="-project Unity-iPhone.xcodeproj"
+          fi
+          
+          xcodebuild $TARGET \
+            -scheme Unity-iPhone \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -allowProvisioningUpdates \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            COMPILATION_MODE=singlefile \
+            ONLY_ACTIVE_ARCH=NO \
+            clean build
+
+      # 4. تحويل التطبيق إلى ملف IPA جاهز
+      - name: Create IPA File 📦
+        run: |
+          mkdir -p Payload
+          # البحث عن ملف الـ .app الناتج (تجنب ملفات الـ Pods)
+          APP_PATH=$(find . -name "*.app" -type d -not -path "*/Pods/*" | head -n 1)
+          
+          if [ -z "$APP_PATH" ]; then
+             APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "*.app" -type d | head -n 1)
+          fi
+
+          echo "Found App at: $APP_PATH"
+          cp -r "$APP_PATH" Payload/
+          zip -r AliGame.ipa Payload
+          
+      # 5. رفع الملف النهائي لك
+      - name: Upload Final IPA 🚀
         uses: actions/upload-artifact@v4
         with:
-          name: iOS-Xcode-Project
-          path: build/iOS
+          name: Final-Game-IPA
+          path: AliGame.ipa
+          retention-days: 7
