@@ -17,24 +17,26 @@ jobs:
           lfs: true 
 
       - name: Cache Library
-        uses: actions/cache@v4 # تم التحديث من v3 إلى v4
+        uses: actions/cache@v4
         with:
           path: Library
-          key: Library-Android
+          key: Library-Android-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-Android-
 
       - name: Build Project
-        uses: game-ci/unity-builder@v2
+        uses: game-ci/unity-builder@v4 # حدثنا النسخة هنا إلى v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }} 
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
+          unityVersion: 6000.4.0f1 # حددنا الإصدار يدوياً لتجنب خطأ الـ Parsing
           targetPlatform: Android
-          androidAppBundle: false 
-          # إذا لم يكن لديك Keystore، يمكنك حذف الأسطر الأربعة القادمة أو تركها كـ Secrets
+          androidAppBundle: false
           androidKeystoreName: user.keystore
-          androidKeystorePass: ${{ secrets.KEYSTORE_PASS }}
           androidKeyaliasName: release
+          androidKeystorePass: ${{ secrets.KEYSTORE_PASS }}
           androidKeyaliasPass: ${{ secrets.KEY_PASS }}
 
       - name: Upload APK
