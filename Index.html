@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Install</title>
+    <style>
+        /* ألوان ومعايير أبل الرسمية */
+        :root {
+            --apple-bg: #F5F5F7; /* خلفية أبل الرمادية الفاتحة الشهيرة */
+            --apple-text: #1D1D1F; /* الأسود الخاص بنصوص أبل */
+            --apple-subtitle: #86868B; /* لون النصوص الفرعية */
+            --apple-blue: #0071E3; /* لون أزرار أبل */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--apple-bg);
+            /* خطوط أبل الرسمية */
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased; /* لجعل الخطوط ناعمة جداً كالآيباد */
+        }
+
+        /* البطاقة البيضاء النظيفة */
+        .app-card {
+            background: #FFFFFF;
+            border-radius: 32px;
+            padding: 40px;
+            width: 280px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* الأيقونة بحواف Squircle المطابقة لنسبة أبل */
+        .app-icon {
+            width: 118px;
+            height: 118px;
+            background-color: #E5E5EA;
+            border-radius: 27px; /* النسبة الرياضية الدقيقة لمنحنيات أبل */
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); /* إطار داخلي خفيف جداً */
+            margin-bottom: 20px;
+            background-image: url('icon.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        h1 {
+            margin: 0 0 6px 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--apple-text);
+            letter-spacing: -0.015em;
+        }
+
+        p.developer {
+            margin: 0 0 30px 0;
+            font-size: 15px;
+            font-weight: 400;
+            color: var(--apple-subtitle);
+            letter-spacing: -0.01em;
+        }
+
+        /* زر الـ GET المطابق لمتجر التطبيقات */
+        .get-button {
+            background-color: var(--apple-blue);
+            color: #FFFFFF;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 12px 42px;
+            border-radius: 24px; /* شكل الحبة Pill Shape */
+            display: inline-block;
+            transition: all 0.2s ease;
+            letter-spacing: -0.02em;
+        }
+
+        .get-button:active {
+            transform: scale(0.96);
+            background-color: #005BB5; /* لون أغمق عند الضغط */
+        }
+
+        .details {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #A1A1A6;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-card">
+        <div class="app-icon"></div>
+        <h1>Project</h1>
+        <p class="developer">Action & Adventure</p>
+        
+        <a href="https://github.com/Aliui8/aliNewP/releases/download/v1/MyGame.apk" class="get-button">GET</a>
+        
+        <div class="details">Developed by Ali</div>
+    </div>
+
+</body>
+</html>
