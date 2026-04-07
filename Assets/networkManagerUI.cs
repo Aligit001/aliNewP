@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP; // ضروري للتحكم في الـ IP
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,16 +7,25 @@ public class NetworkManagerUI : MonoBehaviour
 {
     [SerializeField] private Button hostBtn;
     [SerializeField] private Button joinBtn;
+    [SerializeField] private InputField ipInputField; // أضفنا مربع نص للـ IP
 
     private void Awake()
     {
-        // ربط الأزرار برمجياً لسهولة العمل
+        // زر الـ Host (المضيف)
         hostBtn.onClick.AddListener(() => {
             NetworkManager.Singleton.StartHost();
-            HideUI(); // إخفاء الأزرار بعد البدء
+            HideUI();
         });
 
+        // زر الـ Join (المنضم)
         joinBtn.onClick.AddListener(() => {
+            // كود سحري: يخبر الهاتف بالاتصال بعنوان الـ IP المكتوب في المربع
+            var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+            if (ipInputField != null && !string.IsNullOrEmpty(ipInputField.text))
+            {
+                transport.ConnectionData.Address = ipInputField.text;
+            }
+
             NetworkManager.Singleton.StartClient();
             HideUI();
         });
@@ -23,7 +33,6 @@ public class NetworkManagerUI : MonoBehaviour
 
     private void HideUI()
     {
-        // إخفاء الـ Canvas بالكامل لكي لا يغطي شاشة اللعب
         gameObject.SetActive(false);
     }
 }
