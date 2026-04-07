@@ -1,41 +1,65 @@
-name: Unity Android Build 🚀
+name: Unity Android CI 🚀
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build for Android 🤖
-    runs-on: windows-2022 # نسخة ويندوز الأكثر استقراراً ليونيتي 6
+    name: Build Android 📱
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          lfs: true
 
-      - name: Free Disk Space # خطوة هامة لأن مساحة ويندوز محدودة
-        run: |
-          Get-PSDrive
-          # تنظيف ملفات مؤقتة لضمان وجود مساحة للـ Build
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
 
-      - name: Build Project
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          targetPlatform: Android
-          unityVersion: 6000.4.0f1
-          androidAppBundle: false
-          # الحل السحري لخطأ 101:
-          buildMethod: UnityBuilderAction.Builder.BuildProject 
-          customParameters: -ignoreCompilerErrors # تجاهل أخطاء الكود البسيطة لضمان خروج الـ APK
+    - name: Cache Library
+      uses: actions/cache@v3
+      with:
+        path: Library
+        key: Library-Android
+        restore-keys: |
+          Library-
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Game-Android-APK
-          path: build/Android/*.apk
+    - name: Build APK
+      uses: game-ci/unity-builder@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        unityVersion: 6000.4.0f1
+        targetPlatform: Android
+        androidAppBundle: false
+        buildName: MyGame
+        buildsPath: build
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Android-APK
+        path: build/Android/*.apk
+
+    - name: Build AAB
+      uses: game-ci/unity-builder@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        unityVersion: 6000.4.0f1
+        targetPlatform: Android
+        androidAppBundle: true
+        buildName: MyGame
+        buildsPath: build
+
+    - name: Upload AAB
+      uses: actions/upload-artifact@v4
+      with:
+        name: Android-AAB
+        path: build/Android/*.aab
