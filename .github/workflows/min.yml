@@ -1,6 +1,6 @@
 name: Unity iOS Professional Build 🚀
 
-on: [push]
+on: workflow_dispatch
 
 
 jobs:
