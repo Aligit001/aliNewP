@@ -24,12 +24,12 @@ public class PlayerMove : NetworkBehaviour
         controller = GetComponent<CharacterController>();
         deviceIP = GetDeviceIP();
 
-        // إنشاء الـ NameTag بارتفاع منخفض جداً (1.5) ليكون فوق الرأس مباشرة
         CreateAdvancedNameTag();
 
         if (IsOwner)
         {
-            joystick = GameObject.FindObjectOfType<FixedJoystick>();
+            // تم التحديث إلى FindFirstObjectByType ليتوافق مع Unity 6
+            joystick = GameObject.FindFirstObjectByType<FixedJoystick>();
             CreateFlightUI();
             CreateEmojiMenu(); 
         }
@@ -37,40 +37,36 @@ public class PlayerMove : NetworkBehaviour
 
     void CreateAdvancedNameTag()
     {
-        // تم خفض الارتفاع من 2.7 إلى 1.5 ليكون ملتصقاً بالرأس
         GameObject pivot = new GameObject("PlayerInfoPivot");
         pivot.transform.SetParent(this.transform);
         pivot.transform.localPosition = new Vector3(0, 1.5f, 0); 
 
-        // النص (IP)
         GameObject textObj = new GameObject("IPAddress", typeof(TextMesh));
         textObj.transform.SetParent(pivot.transform);
         textObj.transform.localPosition = Vector3.zero;
         nameTextMesh = textObj.GetComponent<TextMesh>();
-        nameTextMesh.characterSize = 0.07f; // تصغير الخط قليلاً
+        nameTextMesh.characterSize = 0.07f;
         nameTextMesh.fontSize = 50;
         nameTextMesh.anchor = TextAnchor.MiddleCenter;
         nameTextMesh.text = deviceIP;
 
-        // الملصق (Sprite) - حجم صغير ومناسب جداً
         GameObject spriteObj = new GameObject("EmojiSprite", typeof(SpriteRenderer));
         spriteObj.transform.SetParent(pivot.transform);
         spriteObj.transform.localPosition = new Vector3(0, 0.4f, 0); 
-        // تصغير الحجم ليكون متناسقاً مع الشخصية
         spriteObj.transform.localScale = new Vector3(0.1f, 0.1f, 1f); 
         emojiSpriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
 
+        // إضافة الكلاس الموجود بالأسفل
         pivot.AddComponent<FaceCamera>();
     }
 
     void CreateEmojiMenu()
     {
-        Canvas canvas = GameObject.FindObjectOfType<Canvas>();
+        // تم التحديث إلى FindFirstObjectByType
+        Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
         
-        // هذه الأسماء مطابقة تماماً لما في صورتك على GitHub (image_14.png)
-        // ملاحظة: يونيتي لا يحتاج لكتابة .jpeg في الكود عند التحميل من Resources
         string[] myEmojis = { "IMG_0354", "IMG_1097", "IMG_1609", "IMG_1652", "IMG_1653", "IMG_1911" }; 
-        string[] emojiLabels = { "🦶", "🖕", "🤔", "🗿", "😮", "😡" }; // مسميات للأزرار
+        string[] emojiLabels = { "😊", "🌹", "🤔", "🇸🇾", "🫡", "👍" };
         
         for (int i = 0; i < myEmojis.Length; i++) {
             string fileName = myEmojis[i];
@@ -78,7 +74,7 @@ public class PlayerMove : NetworkBehaviour
 
             GameObject btn = CreateButton(canvas, "Btn_" + i, label, new Vector2(100, 100 + (i * 110)));
             RectTransform rt = btn.GetComponent<RectTransform>();
-            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0, 0); // أسفل اليسار
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0, 0);
             rt.anchoredPosition = new Vector2(80, 80 + (i * 105));
             rt.sizeDelta = new Vector2(85, 85);
 
@@ -98,7 +94,6 @@ public class PlayerMove : NetworkBehaviour
     }
 
     IEnumerator ShowEmojiRoutine(string fileName) {
-        // تحميل الصورة من Resources/Emojis/
         Sprite pic = Resources.Load<Sprite>("Emojis/" + fileName);
         if (pic != null) {
             nameTextMesh.text = ""; 
@@ -109,9 +104,8 @@ public class PlayerMove : NetworkBehaviour
         }
     }
 
-    // --- الحركة والأزرار الجانبية (بقية الكود) ---
     void CreateFlightUI() {
-        Canvas canvas = GameObject.FindObjectOfType<Canvas>();
+        Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
         GameObject upBtn = CreateButton(canvas, "FlyUp", "↑", new Vector2(-100, 250));
         AddEventTrigger(upBtn, EventTriggerType.PointerDown, () => vFlyInput = 1f);
         AddEventTrigger(upBtn, EventTriggerType.PointerUp, () => vFlyInput = 0f);
@@ -151,5 +145,17 @@ public class PlayerMove : NetworkBehaviour
 
     string GetDeviceIP() {
         try { return Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))?.ToString() ?? "Player"; } catch { return "Player"; }
+    }
+}
+
+// هذا الجزء هو ما كان ينقصك وحل مشكلة الـ Error
+public class FaceCamera : MonoBehaviour
+{
+    private Transform cam;
+    void Start() { cam = Camera.main.transform; }
+    void LateUpdate() {
+        if (cam != null) {
+            transform.LookAt(transform.position + cam.forward);
+        }
     }
 }
