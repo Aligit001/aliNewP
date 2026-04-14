@@ -2,8 +2,9 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.Net; // للحصول على الـ IP
-using System.Linq; // لتصفية الـ IP
+using System.Collections;
+using System.Net;
+using System.Linq;
 
 public class PlayerMove : NetworkBehaviour 
 {
@@ -13,73 +14,104 @@ public class PlayerMove : NetworkBehaviour
 
     private CharacterController controller;
     private float vFlyInput = 0f;
-
-    // متغير لاسم اللاعب
-    private GameObject nameTagObject;
+    
+    private SpriteRenderer emojiSpriteRenderer;
+    private TextMesh nameTextMesh; 
+    private string deviceIP;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        deviceIP = GetDeviceIP();
 
-        // 1. إنشاء الاسم فوق اللاعب برمجياً (لجميع اللاعبين)
-        CreateNameTag();
+        // إنشاء الـ NameTag بارتفاع منخفض جداً (1.5) ليكون فوق الرأس مباشرة
+        CreateAdvancedNameTag();
 
         if (IsOwner)
         {
             joystick = GameObject.FindObjectOfType<FixedJoystick>();
-            // إنشاء أزرار الطيران (شغالة وتمام كما في المحادثة السابقة)
             CreateFlightUI();
+            CreateEmojiMenu(); 
         }
     }
 
-    // --- دالة إنشاء الاسم فوق اللاعب برمجياً ---
-    void CreateNameTag()
+    void CreateAdvancedNameTag()
     {
-        // إنشاء كائن النص
-        nameTagObject = new GameObject("PlayerNameTag", typeof(TextMesh));
-        nameTagObject.transform.SetParent(this.transform);
-        // تموضع الاسم فوق رأس اللاعب
-        nameTagObject.transform.localPosition = new Vector3(0, 2.5f, 0);
+        // تم خفض الارتفاع من 2.7 إلى 1.5 ليكون ملتصقاً بالرأس
+        GameObject pivot = new GameObject("PlayerInfoPivot");
+        pivot.transform.SetParent(this.transform);
+        pivot.transform.localPosition = new Vector3(0, 1.5f, 0); 
 
-        TextMesh textMesh = nameTagObject.GetComponent<TextMesh>();
-        textMesh.characterSize = 0.1f;
-        textMesh.fontSize = 50;
-        textMesh.anchor = TextAnchor.MiddleCenter;
-        textMesh.alignment = TextAlignment.Center;
-        textMesh.color = Color.white;
+        // النص (IP)
+        GameObject textObj = new GameObject("IPAddress", typeof(TextMesh));
+        textObj.transform.SetParent(pivot.transform);
+        textObj.transform.localPosition = Vector3.zero;
+        nameTextMesh = textObj.GetComponent<TextMesh>();
+        nameTextMesh.characterSize = 0.07f; // تصغير الخط قليلاً
+        nameTextMesh.fontSize = 50;
+        nameTextMesh.anchor = TextAnchor.MiddleCenter;
+        nameTextMesh.text = deviceIP;
 
-        // الحصول على اسم الجهاز من الـ IP (مطلوب لـ Tailscale)
-        string deviceName = GetDeviceIP();
-        textMesh.text = string.IsNullOrEmpty(deviceName) ? "Connecting..." : deviceName;
+        // الملصق (Sprite) - حجم صغير ومناسب جداً
+        GameObject spriteObj = new GameObject("EmojiSprite", typeof(SpriteRenderer));
+        spriteObj.transform.SetParent(pivot.transform);
+        spriteObj.transform.localPosition = new Vector3(0, 0.4f, 0); 
+        // تصغير الحجم ليكون متناسقاً مع الشخصية
+        spriteObj.transform.localScale = new Vector3(0.1f, 0.1f, 1f); 
+        emojiSpriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
 
-        // دالة لجعل الاسم يتجه دائماً نحو الكاميرا
-        nameTagObject.AddComponent<FaceCamera>();
+        pivot.AddComponent<FaceCamera>();
     }
 
-    // دالة مساعدة للحصول على الـ IP الخاص بالجهاز
-    string GetDeviceIP()
-    {
-        try
-        {
-            // هذا سيعيد أول IP Address عام غير Loopback
-            return Dns.GetHostEntry(Dns.GetHostName())
-                .AddressList
-                .FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))
-                ?.ToString() ?? Dns.GetHostName(); // fallback لاسم المضيف إذا لم يجد IP
-        }
-        catch
-        {
-            return "Unknown Player";
-        }
-    }
-
-    // --- بقية الكود (أزرار وحركة) - لم يتغير ---
-    // (تم دمج بقية الكود هنا من المحادثة السابقة لضمان عمل الملف بالكامل عند النسخ)
-    
-    void CreateFlightUI()
+    void CreateEmojiMenu()
     {
         Canvas canvas = GameObject.FindObjectOfType<Canvas>();
-        if (canvas == null) return;
+        
+        // هذه الأسماء مطابقة تماماً لما في صورتك على GitHub (image_14.png)
+        // ملاحظة: يونيتي لا يحتاج لكتابة .jpeg في الكود عند التحميل من Resources
+        string[] myEmojis = { "IMG_0354", "IMG_1097", "IMG_1609", "IMG_1652", "IMG_1653", "IMG_1911" }; 
+        string[] emojiLabels = { "🦶", "🖕", "🤔", "🗿", "😮", "😡" }; // مسميات للأزرار
+        
+        for (int i = 0; i < myEmojis.Length; i++) {
+            string fileName = myEmojis[i];
+            string label = emojiLabels[i];
+
+            GameObject btn = CreateButton(canvas, "Btn_" + i, label, new Vector2(100, 100 + (i * 110)));
+            RectTransform rt = btn.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0, 0); // أسفل اليسار
+            rt.anchoredPosition = new Vector2(80, 80 + (i * 105));
+            rt.sizeDelta = new Vector2(85, 85);
+
+            btn.GetComponent<Button>().onClick.AddListener(() => {
+                RequestEmojiServerRpc(fileName);
+            });
+        }
+    }
+
+    [ServerRpc]
+    void RequestEmojiServerRpc(string fileName) { UpdateEmojiClientRpc(fileName); }
+
+    [ClientRpc]
+    void UpdateEmojiClientRpc(string fileName) {
+        StopAllCoroutines();
+        StartCoroutine(ShowEmojiRoutine(fileName));
+    }
+
+    IEnumerator ShowEmojiRoutine(string fileName) {
+        // تحميل الصورة من Resources/Emojis/
+        Sprite pic = Resources.Load<Sprite>("Emojis/" + fileName);
+        if (pic != null) {
+            nameTextMesh.text = ""; 
+            emojiSpriteRenderer.sprite = pic;
+            yield return new WaitForSeconds(5f); 
+            emojiSpriteRenderer.sprite = null; 
+            nameTextMesh.text = deviceIP; 
+        }
+    }
+
+    // --- الحركة والأزرار الجانبية (بقية الكود) ---
+    void CreateFlightUI() {
+        Canvas canvas = GameObject.FindObjectOfType<Canvas>();
         GameObject upBtn = CreateButton(canvas, "FlyUp", "↑", new Vector2(-100, 250));
         AddEventTrigger(upBtn, EventTriggerType.PointerDown, () => vFlyInput = 1f);
         AddEventTrigger(upBtn, EventTriggerType.PointerUp, () => vFlyInput = 0f);
@@ -88,47 +120,36 @@ public class PlayerMove : NetworkBehaviour
         AddEventTrigger(downBtn, EventTriggerType.PointerUp, () => vFlyInput = 0f);
     }
 
-    GameObject CreateButton(Canvas canvas, string name, string label, Vector2 pos)
-    {
+    GameObject CreateButton(Canvas canvas, string name, string label, Vector2 pos) {
         GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
         btnObj.transform.SetParent(canvas.transform, false);
         RectTransform rt = btnObj.GetComponent<RectTransform>();
-        rt.anchorMin = rt.anchorMax = new Vector2(1, 0);
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = new Vector2(100, 100);
-        btnObj.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
+        rt.anchorMin = rt.anchorMax = new Vector2(1, 0); 
+        rt.anchoredPosition = pos; rt.sizeDelta = new Vector2(100, 100);
+        btnObj.GetComponent<Image>().color = new Color(0, 0, 0, 0.6f);
         GameObject txtObj = new GameObject("Text", typeof(RectTransform), typeof(Text));
         txtObj.transform.SetParent(btnObj.transform, false);
         Text t = txtObj.GetComponent<Text>();
-        t.text = label; t.fontSize = 50; t.alignment = TextAnchor.MiddleCenter;
+        t.text = label; t.fontSize = 35; t.alignment = TextAnchor.MiddleCenter;
         t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        t.color = Color.white;
-        txtObj.GetComponent<RectTransform>().sizeDelta = rt.sizeDelta;
+        t.color = Color.white; txtObj.GetComponent<RectTransform>().sizeDelta = rt.sizeDelta;
         return btnObj;
     }
 
-    void AddEventTrigger(GameObject obj, EventTriggerType type, System.Action action)
-    {
+    void AddEventTrigger(GameObject obj, EventTriggerType type, System.Action action) {
         EventTrigger trigger = obj.GetComponent<EventTrigger>() ?? obj.AddComponent<EventTrigger>();
         var entry = new EventTrigger.Entry { eventID = type };
-        entry.callback.AddListener((eventData) => action());
+        entry.callback.AddListener((data) => action());
         trigger.triggers.Add(entry);
     }
 
-    void Update()
-    {
+    void Update() {
         if (!IsOwner || joystick == null) return;
-        Vector3 moveDirection = transform.right * joystick.Horizontal + transform.forward * joystick.Vertical;
-        Vector3 flyDirection = transform.up * vFlyInput;
-        Vector3 finalMove = moveDirection * SpeedMove + flyDirection * FlySpeed;
-        controller.Move(finalMove * Time.deltaTime);
+        Vector3 move = transform.right * joystick.Horizontal + transform.forward * joystick.Vertical;
+        controller.Move((move * SpeedMove + transform.up * vFlyInput * FlySpeed) * Time.deltaTime);
     }
-}
 
-// كلاس مساعد لجعل الاسم يتجه للكاميرا دائماً
-public class FaceCamera : MonoBehaviour
-{
-    private Camera mainCamera;
-    void Start() { mainCamera = Camera.main; }
-    void LateUpdate() { if (mainCamera != null) transform.LookAt(transform.position + mainCamera.transform.rotation * Vector3.forward, mainCamera.transform.rotation * Vector3.up); }
+    string GetDeviceIP() {
+        try { return Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))?.ToString() ?? "Player"; } catch { return "Player"; }
+    }
 }
