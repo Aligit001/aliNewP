@@ -24,10 +24,15 @@ public class PlayerMove : NetworkBehaviour
     private RectTransform miniMapCanvas;
     private float mapScale = 2.5f; 
 
+    // لنظام الإشعارات
+    private static Text notificationText;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
         deviceIP = GetDeviceIP();
+        
+        // استبدال أي رمز أبل قديم بـ تفاحة خضراء أو إضافة التفاحة بجانب اسم المطور
         deviceName = SystemInfo.deviceName;
 
         CreateAdvancedNameTag();
@@ -38,6 +43,9 @@ public class PlayerMove : NetworkBehaviour
             CreateFlightUI();
             CreateHorizontalEmojiMenu();
             CreateMiniMapUI();
+            CreateNotificationUI();
+            // إرسال إشعار دخول للجميع
+            NotifyServerRpc(deviceName + " Joined the world! 🍏");
         }
     }
 
@@ -61,7 +69,7 @@ public class PlayerMove : NetworkBehaviour
         ipTextMesh.color = Color.yellow; 
         ipTextMesh.text = deviceIP;
 
-        // 2. اسم الجهاز (مرفوع قليلاً لمنع التداخل)
+        // 2. اسم الجهاز (مع التفاحة الخضراء للمطور)
         GameObject nameObj = new GameObject("DeviceName", typeof(TextMesh));
         nameObj.transform.SetParent(pivot.transform);
         nameObj.transform.localPosition = new Vector3(0, 0.0055f, 0); 
@@ -71,7 +79,10 @@ public class PlayerMove : NetworkBehaviour
         deviceNameTextMesh.fontStyle = FontStyle.Bold;
         deviceNameTextMesh.anchor = TextAnchor.MiddleCenter;
         deviceNameTextMesh.color = IsOwner ? new Color(0, 1, 1, 0.8f) : Color.white; 
-        deviceNameTextMesh.text = (IsOwner ? "[Dev] " : "") + deviceName;
+        
+        // وضع التفاحة الخضراء 🍏 بجانب اسم المطور
+        string displayName = (IsOwner ? "🍏 [Dev] " : "") + deviceName;
+        deviceNameTextMesh.text = displayName;
 
         // 3. الملصق
         GameObject spriteObj = new GameObject("EmojiSprite", typeof(SpriteRenderer));
@@ -84,18 +95,43 @@ public class PlayerMove : NetworkBehaviour
         pivot.AddComponent<FaceCamera>();
     }
 
+    // --- نظام الإشعارات ---
+    void CreateNotificationUI() {
+        if (notificationText != null) return;
+        Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
+        GameObject notifyObj = new GameObject("NotifyText", typeof(RectTransform), typeof(Text));
+        notifyObj.transform.SetParent(canvas.transform, false);
+        RectTransform rt = notifyObj.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 1f);
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = new Vector2(0, -80);
+        rt.sizeDelta = new Vector2(600, 50);
+        
+        notificationText = notifyObj.GetComponent<Text>();
+        notificationText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        notificationText.fontSize = 22;
+        notificationText.alignment = TextAnchor.MiddleCenter;
+        notificationText.color = Color.white;
+        notificationText.text = "";
+    }
+
+    [ServerRpc] void NotifyServerRpc(string message) { NotifyClientRpc(message); }
+    [ClientRpc] void NotifyClientRpc(string message) { if(notificationText != null) StartCoroutine(ShowNotify(message)); }
+    IEnumerator ShowNotify(string msg) {
+        notificationText.text = msg;
+        yield return new WaitForSeconds(3f);
+        notificationText.text = "";
+    }
+
+    // --- بقية الدوال (Flight, MiniMap, Emoji) ---
+
     void CreateFlightUI() {
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
-        Vector2 br = new Vector2(1f, 0f); // الارتكاز أسفل يمين
-        
-        // كبرنا الأزرار لـ 85 وأبعدناها عن الحافة اليمنى لـ -100 لتعطي مساحة للف الشاشة
-        float btnS = 85f; 
-        float offsetX = -100f; 
-
+        Vector2 br = new Vector2(1f, 0f);
+        float btnS = 85f; float offsetX = -100f; 
         GameObject up = CreateButton(canvas, "Up", "↑", new Vector2(offsetX, 180), br, br, br, new Vector2(btnS, btnS));
         AddEventTrigger(up, EventTriggerType.PointerDown, () => vFlyInput = 1f);
         AddEventTrigger(up, EventTriggerType.PointerUp, () => vFlyInput = 0f);
-
         GameObject down = CreateButton(canvas, "Down", "↓", new Vector2(offsetX, 70), br, br, br, new Vector2(btnS, btnS));
         AddEventTrigger(down, EventTriggerType.PointerDown, () => vFlyInput = -1f);
         AddEventTrigger(down, EventTriggerType.PointerUp, () => vFlyInput = 0f);
@@ -103,7 +139,6 @@ public class PlayerMove : NetworkBehaviour
 
     void CreateMiniMapUI() {
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
-        if (canvas == null) return;
         GameObject mapBg = new GameObject("MiniMap", typeof(RectTransform), typeof(Image));
         mapBg.transform.SetParent(canvas.transform, false);
         RectTransform rt = mapBg.GetComponent<RectTransform>();
@@ -111,11 +146,10 @@ public class PlayerMove : NetworkBehaviour
         rt.anchoredPosition = new Vector2(15, -15);
         rt.sizeDelta = new Vector2(120, 120);
         mapBg.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
-        GameObject playerDot = new GameObject("PD", typeof(RectTransform), typeof(Image));
-        playerDot.transform.SetParent(mapBg.transform, false);
-        playerDot.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        playerDot.GetComponent<RectTransform>().sizeDelta = new Vector2(8, 8);
-        playerDot.GetComponent<Image>().color = Color.green;
+        GameObject pDot = new GameObject("PD", typeof(RectTransform), typeof(Image));
+        pDot.transform.SetParent(mapBg.transform, false);
+        pDot.GetComponent<RectTransform>().sizeDelta = new Vector2(8, 8);
+        pDot.GetComponent<Image>().color = Color.green;
         miniMapCanvas = rt;
     }
 
@@ -161,7 +195,6 @@ public class PlayerMove : NetworkBehaviour
 
     [ServerRpc] void RequestEmojiServerRpc(string f) { UpdateEmojiClientRpc(f); }
     [ClientRpc] void UpdateEmojiClientRpc(string f) { StopAllCoroutines(); StartCoroutine(ShowEmojiRoutine(f)); }
-
     IEnumerator ShowEmojiRoutine(string f) {
         Sprite pic = Resources.Load<Sprite>("Emojis/" + f);
         if (pic == null) {
@@ -173,7 +206,8 @@ public class PlayerMove : NetworkBehaviour
             emojiSpriteRenderer.sprite = pic;
             yield return new WaitForSeconds(4f);
             emojiSpriteRenderer.sprite = null;
-            ipTextMesh.text = deviceIP; deviceNameTextMesh.text = (IsOwner ? "[Dev] " : "") + deviceName;
+            ipTextMesh.text = deviceIP; 
+            deviceNameTextMesh.text = (IsOwner ? "🍏 [Dev] " : "") + deviceName;
         }
     }
 
@@ -182,12 +216,7 @@ public class PlayerMove : NetworkBehaviour
         b.transform.SetParent(canvas.transform, false);
         RectTransform r = b.GetComponent<RectTransform>();
         r.anchorMin = min; r.anchorMax = max; r.pivot = piv; r.anchoredPosition = pos; r.sizeDelta = size;
-        
-        // جعل الزر لا يحجب اللمس عما خلفه إلا في منطقة الصورة فقط
-        Image img = b.GetComponent<Image>();
-        img.color = new Color(0,0,0,0.5f);
-        img.raycastTarget = true; 
-
+        b.GetComponent<Image>().color = new Color(0,0,0,0.5f);
         GameObject tO = new GameObject("T", typeof(Text));
         tO.transform.SetParent(b.transform, false);
         Text t = tO.GetComponent<Text>();
