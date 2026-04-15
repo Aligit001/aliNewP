@@ -37,19 +37,16 @@ public class PlayerMove : NetworkBehaviour
 
     void CreateAdvancedNameTag()
     {
-        // هذا الكائن هو "الأب" لكل شيء فوق رأس اللاعب
         GameObject pivot = new GameObject("PlayerInfoPivot");
         pivot.transform.SetParent(this.transform);
         
-        // تعديل الارتفاع: غيرناه من 2.0 إلى 0.15 ليكون قريباً جداً من الرأس
-        pivot.transform.localPosition = new Vector3(0, 0.15f, 0); 
+        // تقليل الارتفاع بشكل كبير جداً ليتناسب مع حجم اللاعب (0.01)
+        pivot.transform.localPosition = new Vector3(0, 0.015f, 0); 
 
         // إعداد نص الـ IP
         GameObject textObj = new GameObject("IPAddress", typeof(TextMesh));
         textObj.transform.SetParent(pivot.transform);
         textObj.transform.localPosition = Vector3.zero;
-        
-        // تقليل الـ Scale أكثر ليناسب الحجم الجديد للاعب
         textObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f); 
         
         nameTextMesh = textObj.GetComponent<TextMesh>();
@@ -57,23 +54,21 @@ public class PlayerMove : NetworkBehaviour
         nameTextMesh.fontSize = 80; 
         nameTextMesh.anchor = TextAnchor.MiddleCenter;
         nameTextMesh.alignment = TextAlignment.Center;
-        nameTextMesh.color = Color.yellow; // لون مميز ليكون أوضح
+        nameTextMesh.color = Color.yellow; 
         nameTextMesh.text = deviceIP;
 
         // إعداد الملصق (Emoji)
         GameObject spriteObj = new GameObject("EmojiSprite", typeof(SpriteRenderer));
         spriteObj.transform.SetParent(pivot.transform);
         
-        // المسافة بين الملصق والنص (جعلناها 0.08 بدلاً من 1.0)
-        spriteObj.transform.localPosition = new Vector3(0, 0.08f, 0); 
-        
-        // تصغير حجم الملصق ليتناسب مع اللاعب
+        // المسافة بين الملصق والنص
+        spriteObj.transform.localPosition = new Vector3(0, 0.008f, 0); 
         spriteObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); 
         
         emojiSpriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
         emojiSpriteRenderer.sortingOrder = 100;
 
-        // إضافة سكربت مواجهة الكاميرا ليبقى النص والملصق أمامك دائماً
+        // إضافة سكربت مواجهة الكاميرا
         pivot.AddComponent<FaceCamera>();
     }
 
@@ -85,21 +80,17 @@ public class PlayerMove : NetworkBehaviour
         string[] myEmojis = { "IMG_0354", "IMG_1097", "IMG_1609", "IMG_1652", "IMG_1653", "IMG_1911" }; 
         string[] emojiLabels = { "😊", "🌹", "🤔", "🇸🇾", "🫡", "👍" };
         
-        float buttonSize = 50f; // صغرنا حجم الزر قليلاً
-        float spacing = 55f;    // المسافة بين الأزرار
+        float buttonSize = 50f; 
+        float spacing = 55f;    
         
         for (int i = 0; i < myEmojis.Length; i++) {
             string fileName = myEmojis[i];
             float xPos = (i - (myEmojis.Length / 2.0f) + 0.5f) * spacing;
 
-            // وضع الأزرار في أعلى الشاشة (Y = -30 ليكون بعيداً عن حافة الهاتف)
-            GameObject btn = CreateButton(canvas, "Btn_" + i, emojiLabels[i], new Vector2(xPos, -30)); 
+            // إرسال إحداثيات (أعلى-المنتصف) للأزرار
+            Vector2 topCenterAnchor = new Vector2(0.5f, 1f);
             
-            RectTransform rt = btn.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.sizeDelta = new Vector2(buttonSize, buttonSize);
+            GameObject btn = CreateButton(canvas, "Btn_" + i, emojiLabels[i], new Vector2(xPos, -20), topCenterAnchor, topCenterAnchor, topCenterAnchor, new Vector2(buttonSize, buttonSize)); 
 
             btn.GetComponent<Button>().onClick.AddListener(() => {
                 RequestEmojiServerRpc(fileName);
@@ -136,31 +127,50 @@ public class PlayerMove : NetworkBehaviour
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
         if (canvas == null) return;
 
-        // أزرار الطيران أسفل اليمين لكي لا تزحم الشاشة
-        GameObject upBtn = CreateButton(canvas, "FlyUp", "↑", new Vector2(-60, 180));
+        // إرسال إحداثيات (أسفل-اليمين) لأزرار الطيران
+        Vector2 bottomRightAnchor = new Vector2(1f, 0f);
+        Vector2 btnSize = new Vector2(70f, 70f);
+
+        GameObject upBtn = CreateButton(canvas, "FlyUp", "↑", new Vector2(-20, 110), bottomRightAnchor, bottomRightAnchor, bottomRightAnchor, btnSize);
         AddEventTrigger(upBtn, EventTriggerType.PointerDown, () => vFlyInput = 1f);
         AddEventTrigger(upBtn, EventTriggerType.PointerUp, () => vFlyInput = 0f);
         
-        GameObject downBtn = CreateButton(canvas, "FlyDown", "↓", new Vector2(-60, 70));
+        GameObject downBtn = CreateButton(canvas, "FlyDown", "↓", new Vector2(-20, 30), bottomRightAnchor, bottomRightAnchor, bottomRightAnchor, btnSize);
         AddEventTrigger(downBtn, EventTriggerType.PointerDown, () => vFlyInput = -1f);
         AddEventTrigger(downBtn, EventTriggerType.PointerUp, () => vFlyInput = 0f);
     }
 
-    GameObject CreateButton(Canvas canvas, string name, string label, Vector2 pos) {
+    // الدالة المحدثة: الآن تأخذ Anchors لتثبيت الأزرار في مكانها الصحيح مهما كان حجم الشاشة
+    GameObject CreateButton(Canvas canvas, string name, string label, Vector2 pos, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 size) {
         GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
         btnObj.transform.SetParent(canvas.transform, false);
+        
         RectTransform rt = btnObj.GetComponent<RectTransform>();
+        rt.anchorMin = anchorMin;
+        rt.anchorMax = anchorMax;
+        rt.pivot = pivot;
         rt.anchoredPosition = pos; 
-        rt.sizeDelta = new Vector2(80, 80);
+        rt.sizeDelta = size;
+        
         btnObj.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
         
-        GameObject txtObj = new GameObject("Text", typeof(Text));
+        GameObject txtObj = new GameObject("Text", typeof(RectTransform), typeof(Text));
         txtObj.transform.SetParent(btnObj.transform, false);
+        
         Text t = txtObj.GetComponent<Text>();
-        t.text = label; t.fontSize = 25; t.alignment = TextAnchor.MiddleCenter;
+        t.text = label; 
+        t.fontSize = 25; 
+        t.alignment = TextAnchor.MiddleCenter;
         t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         t.color = Color.white;
-        txtObj.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 80);
+        
+        // جعل النص يملأ الزر بالكامل
+        RectTransform txtRt = txtObj.GetComponent<RectTransform>();
+        txtRt.anchorMin = Vector2.zero;
+        txtRt.anchorMax = Vector2.one;
+        txtRt.offsetMin = Vector2.zero;
+        txtRt.offsetMax = Vector2.zero;
+
         return btnObj;
     }
 
