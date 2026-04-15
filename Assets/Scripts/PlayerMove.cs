@@ -24,52 +24,59 @@ public class PlayerMove : NetworkBehaviour
         controller = GetComponent<CharacterController>();
         deviceIP = GetDeviceIP();
 
-        // إنشاء اسم اللاعب والملصق
+        // إنشاء نظام المعلومات فوق الرأس
         CreateAdvancedNameTag();
 
         if (IsOwner)
         {
             joystick = GameObject.FindFirstObjectByType<FixedJoystick>();
             CreateFlightUI();
-            CreateHorizontalEmojiMenu(); // الأزرار الأفقية
+            CreateHorizontalEmojiMenu(); 
         }
     }
 
     void CreateAdvancedNameTag()
     {
+        // هذا الكائن هو "الأب" لكل شيء فوق رأس اللاعب
         GameObject pivot = new GameObject("PlayerInfoPivot");
         pivot.transform.SetParent(this.transform);
-        pivot.transform.localPosition = new Vector3(0, 2.0f, 0); // رفعناه قليلاً ليكون فوق الرأس
+        
+        // تعديل الارتفاع: غيرناه من 2.0 إلى 0.15 ليكون قريباً جداً من الرأس
+        pivot.transform.localPosition = new Vector3(0, 0.15f, 0); 
 
-        // إعداد نص الـ IP برمجياً ليكون واضحاً
+        // إعداد نص الـ IP
         GameObject textObj = new GameObject("IPAddress", typeof(TextMesh));
         textObj.transform.SetParent(pivot.transform);
         textObj.transform.localPosition = Vector3.zero;
         
-        // تصغير الحجم جداً برمجياً لأن النصوص ثلاثية الأبعاد تكون ضخمة
-        textObj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f); 
+        // تقليل الـ Scale أكثر ليناسب الحجم الجديد للاعب
+        textObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f); 
         
         nameTextMesh = textObj.GetComponent<TextMesh>();
         nameTextMesh.characterSize = 1f;
-        nameTextMesh.fontSize = 100; // خط كبير مع Scale صغير يعطي دقة عالية
+        nameTextMesh.fontSize = 80; 
         nameTextMesh.anchor = TextAnchor.MiddleCenter;
         nameTextMesh.alignment = TextAlignment.Center;
+        nameTextMesh.color = Color.yellow; // لون مميز ليكون أوضح
         nameTextMesh.text = deviceIP;
 
         // إعداد الملصق (Emoji)
         GameObject spriteObj = new GameObject("EmojiSprite", typeof(SpriteRenderer));
         spriteObj.transform.SetParent(pivot.transform);
-        spriteObj.transform.localPosition = new Vector3(0, 1.0f, 0); // فوق النص
-        spriteObj.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f); 
+        
+        // المسافة بين الملصق والنص (جعلناها 0.08 بدلاً من 1.0)
+        spriteObj.transform.localPosition = new Vector3(0, 0.08f, 0); 
+        
+        // تصغير حجم الملصق ليتناسب مع اللاعب
+        spriteObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); 
         
         emojiSpriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
-        emojiSpriteRenderer.sortingOrder = 100; // لضمان ظهوره فوق كل شيء
+        emojiSpriteRenderer.sortingOrder = 100;
 
-        // إضافة سكربت مواجهة الكاميرا
+        // إضافة سكربت مواجهة الكاميرا ليبقى النص والملصق أمامك دائماً
         pivot.AddComponent<FaceCamera>();
     }
 
-    // دالة جديدة لترتيب الأزرار أفقياً في أعلى الشاشة
     void CreateHorizontalEmojiMenu()
     {
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
@@ -78,19 +85,17 @@ public class PlayerMove : NetworkBehaviour
         string[] myEmojis = { "IMG_0354", "IMG_1097", "IMG_1609", "IMG_1652", "IMG_1653", "IMG_1911" }; 
         string[] emojiLabels = { "😊", "🌹", "🤔", "🇸🇾", "🫡", "👍" };
         
-        float buttonSize = 70f; // حجم الزر
-        float spacing = 80f;    // المسافة بين الأزرار
+        float buttonSize = 50f; // صغرنا حجم الزر قليلاً
+        float spacing = 55f;    // المسافة بين الأزرار
         
         for (int i = 0; i < myEmojis.Length; i++) {
             string fileName = myEmojis[i];
-            
-            // حساب الموقع ليكونوا في المنتصف أفقياً
             float xPos = (i - (myEmojis.Length / 2.0f) + 0.5f) * spacing;
 
-            GameObject btn = CreateButton(canvas, "Btn_" + i, emojiLabels[i], new Vector2(xPos, -40)); // -40 ليكون أسفل الحافة العلوية قليلاً
+            // وضع الأزرار في أعلى الشاشة (Y = -30 ليكون بعيداً عن حافة الهاتف)
+            GameObject btn = CreateButton(canvas, "Btn_" + i, emojiLabels[i], new Vector2(xPos, -30)); 
             
             RectTransform rt = btn.GetComponent<RectTransform>();
-            // تثبيت الأزرار في أعلى المنتصف
             rt.anchorMin = new Vector2(0.5f, 1f);
             rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
@@ -112,28 +117,18 @@ public class PlayerMove : NetworkBehaviour
     }
 
     IEnumerator ShowEmojiRoutine(string fileName) {
-        // محاولة تحميل الصورة كـ Sprite أولاً
         Sprite pic = Resources.Load<Sprite>("Emojis/" + fileName);
-        
-        // إذا فشل (بسبب إعدادات الإمبورت في السيرفر)، نحملها كـ Texture ونحولها
         if (pic == null) {
             Texture2D tex = Resources.Load<Texture2D>("Emojis/" + fileName);
-            if (tex != null) {
-                pic = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-            }
+            if (tex != null) pic = Sprite.Create(tex, new Rect(0,0,tex.width,tex.height), new Vector2(0.5f,0.5f));
         }
 
         if (pic != null) {
             nameTextMesh.text = ""; 
             emojiSpriteRenderer.sprite = pic;
-            yield return new WaitForSeconds(5f); 
+            yield return new WaitForSeconds(4f); 
             emojiSpriteRenderer.sprite = null; 
             nameTextMesh.text = deviceIP; 
-        } else {
-            // كود لاختبار إذا كانت الصورة غير موجودة نهائياً
-            nameTextMesh.text = "الصورة مفقودة!";
-            yield return new WaitForSeconds(2f);
-            nameTextMesh.text = deviceIP;
         }
     }
 
@@ -141,12 +136,12 @@ public class PlayerMove : NetworkBehaviour
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
         if (canvas == null) return;
 
-        // وضعنا أزرار الطيران على اليمين لكي لا تتداخل مع الـ Joystick أو الملصقات
-        GameObject upBtn = CreateButton(canvas, "FlyUp", "↑", new Vector2(-100, 250));
+        // أزرار الطيران أسفل اليمين لكي لا تزحم الشاشة
+        GameObject upBtn = CreateButton(canvas, "FlyUp", "↑", new Vector2(-60, 180));
         AddEventTrigger(upBtn, EventTriggerType.PointerDown, () => vFlyInput = 1f);
         AddEventTrigger(upBtn, EventTriggerType.PointerUp, () => vFlyInput = 0f);
         
-        GameObject downBtn = CreateButton(canvas, "FlyDown", "↓", new Vector2(-100, 100));
+        GameObject downBtn = CreateButton(canvas, "FlyDown", "↓", new Vector2(-60, 70));
         AddEventTrigger(downBtn, EventTriggerType.PointerDown, () => vFlyInput = -1f);
         AddEventTrigger(downBtn, EventTriggerType.PointerUp, () => vFlyInput = 0f);
     }
@@ -154,26 +149,18 @@ public class PlayerMove : NetworkBehaviour
     GameObject CreateButton(Canvas canvas, string name, string label, Vector2 pos) {
         GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
         btnObj.transform.SetParent(canvas.transform, false);
-        
         RectTransform rt = btnObj.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(1, 0); // الافتراضي أسفل اليمين (لأزرار الطيران)
-        rt.anchorMax = new Vector2(1, 0); 
         rt.anchoredPosition = pos; 
-        rt.sizeDelta = new Vector2(100, 100);
+        rt.sizeDelta = new Vector2(80, 80);
+        btnObj.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
         
-        btnObj.GetComponent<Image>().color = new Color(0, 0, 0, 0.6f);
-        
-        GameObject txtObj = new GameObject("Text", typeof(RectTransform), typeof(Text));
+        GameObject txtObj = new GameObject("Text", typeof(Text));
         txtObj.transform.SetParent(btnObj.transform, false);
-        
         Text t = txtObj.GetComponent<Text>();
-        t.text = label; 
-        t.fontSize = 35; 
-        t.alignment = TextAnchor.MiddleCenter;
+        t.text = label; t.fontSize = 25; t.alignment = TextAnchor.MiddleCenter;
         t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        t.color = Color.white; 
-        
-        txtObj.GetComponent<RectTransform>().sizeDelta = rt.sizeDelta;
+        t.color = Color.white;
+        txtObj.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 80);
         return btnObj;
     }
 
@@ -195,16 +182,8 @@ public class PlayerMove : NetworkBehaviour
     }
 }
 
-// السكربت المساعد لالتفاف الـ IP نحو الكاميرا
-public class FaceCamera : MonoBehaviour
-{
+public class FaceCamera : MonoBehaviour {
     private Transform cam;
-    void Start() { 
-        if (Camera.main != null) cam = Camera.main.transform; 
-    }
-    void LateUpdate() {
-        if (cam != null) {
-            transform.LookAt(transform.position + cam.forward);
-        }
-    }
+    void Start() { if (Camera.main != null) cam = Camera.main.transform; }
+    void LateUpdate() { if (cam != null) transform.LookAt(transform.position + cam.forward); }
 }
