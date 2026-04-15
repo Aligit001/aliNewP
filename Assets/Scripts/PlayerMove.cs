@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
-using System.Collections.Generic;
 using System.Net;
 using System.Linq;
 
@@ -22,10 +21,8 @@ public class PlayerMove : NetworkBehaviour
     private string deviceIP;
     private string deviceName;
 
-    // متغيرات الخريطة المصغرة
-    private RectTransform miniMapPoint; 
     private RectTransform miniMapCanvas;
-    private float mapScale = 2f; // زوم الخريطة
+    private float mapScale = 2.5f; 
 
     void Start()
     {
@@ -40,7 +37,7 @@ public class PlayerMove : NetworkBehaviour
             joystick = GameObject.FindFirstObjectByType<FixedJoystick>();
             CreateFlightUI();
             CreateHorizontalEmojiMenu();
-            CreateMiniMapUI(); // إنشاء الخريطة المصغرة
+            CreateMiniMapUI();
         }
     }
 
@@ -48,128 +45,117 @@ public class PlayerMove : NetworkBehaviour
     {
         GameObject pivot = new GameObject("PlayerInfoPivot");
         pivot.transform.SetParent(this.transform);
-        pivot.transform.localPosition = new Vector3(0, 0.015f, 0); 
+        pivot.transform.localPosition = new Vector3(0, 0.012f, 0); 
 
-        // نص الـ IP
+        float fontScale = IsOwner ? 0.0035f : 0.007f;
+        int fontSize = IsOwner ? 35 : 65;
+
+        // 1. نص الـ IP
         GameObject ipObj = new GameObject("IPAddress", typeof(TextMesh));
         ipObj.transform.SetParent(pivot.transform);
         ipObj.transform.localPosition = Vector3.zero;
-        ipObj.transform.localScale = new Vector3(0.008f, 0.008f, 0.008f); 
+        ipObj.transform.localScale = new Vector3(fontScale, fontScale, fontScale); 
         ipTextMesh = ipObj.GetComponent<TextMesh>();
-        ipTextMesh.fontSize = 60;
+        ipTextMesh.fontSize = fontSize;
         ipTextMesh.anchor = TextAnchor.MiddleCenter;
         ipTextMesh.color = Color.yellow; 
         ipTextMesh.text = deviceIP;
 
-        // اسم الجهاز + رتبة المطور
+        // 2. اسم الجهاز (مرفوع قليلاً لمنع التداخل)
         GameObject nameObj = new GameObject("DeviceName", typeof(TextMesh));
         nameObj.transform.SetParent(pivot.transform);
-        nameObj.transform.localPosition = new Vector3(0, 0.006f, 0); 
-        nameObj.transform.localScale = new Vector3(0.009f, 0.009f, 0.009f); 
+        nameObj.transform.localPosition = new Vector3(0, 0.0055f, 0); 
+        nameObj.transform.localScale = new Vector3(fontScale * 1.1f, fontScale * 1.1f, fontScale * 1.1f); 
         deviceNameTextMesh = nameObj.GetComponent<TextMesh>();
-        deviceNameTextMesh.fontSize = 70;
+        deviceNameTextMesh.fontSize = fontSize + 10;
         deviceNameTextMesh.fontStyle = FontStyle.Bold;
         deviceNameTextMesh.anchor = TextAnchor.MiddleCenter;
-        deviceNameTextMesh.color = IsOwner ? Color.cyan : Color.white; 
+        deviceNameTextMesh.color = IsOwner ? new Color(0, 1, 1, 0.8f) : Color.white; 
         deviceNameTextMesh.text = (IsOwner ? "[Dev] " : "") + deviceName;
 
-        // الملصق
+        // 3. الملصق
         GameObject spriteObj = new GameObject("EmojiSprite", typeof(SpriteRenderer));
         spriteObj.transform.SetParent(pivot.transform);
-        spriteObj.transform.localPosition = new Vector3(0, 0.014f, 0); 
-        spriteObj.transform.localScale = new Vector3(0.08f, 0.08f, 0.08f); 
+        spriteObj.transform.localPosition = new Vector3(0, 0.013f, 0); 
+        spriteObj.transform.localScale = new Vector3(0.06f, 0.06f, 0.06f); 
         emojiSpriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
         emojiSpriteRenderer.sortingOrder = 100;
 
         pivot.AddComponent<FaceCamera>();
     }
 
-    void CreateMiniMapUI()
-    {
+    void CreateFlightUI() {
+        Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
+        Vector2 br = new Vector2(1f, 0f); // الارتكاز أسفل يمين
+        
+        // كبرنا الأزرار لـ 85 وأبعدناها عن الحافة اليمنى لـ -100 لتعطي مساحة للف الشاشة
+        float btnS = 85f; 
+        float offsetX = -100f; 
+
+        GameObject up = CreateButton(canvas, "Up", "↑", new Vector2(offsetX, 180), br, br, br, new Vector2(btnS, btnS));
+        AddEventTrigger(up, EventTriggerType.PointerDown, () => vFlyInput = 1f);
+        AddEventTrigger(up, EventTriggerType.PointerUp, () => vFlyInput = 0f);
+
+        GameObject down = CreateButton(canvas, "Down", "↓", new Vector2(offsetX, 70), br, br, br, new Vector2(btnS, btnS));
+        AddEventTrigger(down, EventTriggerType.PointerDown, () => vFlyInput = -1f);
+        AddEventTrigger(down, EventTriggerType.PointerUp, () => vFlyInput = 0f);
+    }
+
+    void CreateMiniMapUI() {
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
         if (canvas == null) return;
-
-        // إطار الخريطة الخلفي
         GameObject mapBg = new GameObject("MiniMap", typeof(RectTransform), typeof(Image));
         mapBg.transform.SetParent(canvas.transform, false);
         RectTransform rt = mapBg.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0, 1);
-        rt.anchorMax = new Vector2(0, 1);
-        rt.pivot = new Vector2(0, 1);
-        rt.anchoredPosition = new Vector2(20, -20);
-        rt.sizeDelta = new Vector2(150, 150);
-        mapBg.GetComponent<Image>().color = new Color(0, 0, 0, 0.6f);
-
-        // نقطة اللاعب (أنت)
-        GameObject playerDot = new GameObject("PlayerDot", typeof(RectTransform), typeof(Image));
+        rt.anchorMin = new Vector2(0, 1); rt.anchorMax = new Vector2(0, 1); rt.pivot = new Vector2(0, 1);
+        rt.anchoredPosition = new Vector2(15, -15);
+        rt.sizeDelta = new Vector2(120, 120);
+        mapBg.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
+        GameObject playerDot = new GameObject("PD", typeof(RectTransform), typeof(Image));
         playerDot.transform.SetParent(mapBg.transform, false);
-        miniMapPoint = playerDot.GetComponent<RectTransform>();
-        miniMapPoint.sizeDelta = new Vector2(10, 10);
+        playerDot.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        playerDot.GetComponent<RectTransform>().sizeDelta = new Vector2(8, 8);
         playerDot.GetComponent<Image>().color = Color.green;
         miniMapCanvas = rt;
     }
 
-    void Update()
-    {
+    void Update() {
         if (!IsOwner) return;
-
-        // حركة اللاعب
-        if (joystick != null)
-        {
+        if (joystick != null) {
             Vector3 move = transform.right * joystick.Horizontal + transform.forward * joystick.Vertical;
             controller.Move((move * SpeedMove + transform.up * vFlyInput * FlySpeed) * Time.deltaTime);
         }
-
-        // تحديث الخريطة المصغرة برمجياً
         UpdateMiniMap();
     }
 
-    void UpdateMiniMap()
-    {
+    void UpdateMiniMap() {
         if (miniMapCanvas == null) return;
-
-        // الحصول على كل اللاعبين في اللعبة
-        PlayerMove[] allPlayers = GameObject.FindObjectsByType<PlayerMove>(FindObjectsSortMode.None);
-        
-        // تنظيف النقاط القديمة (باستثناء نقطة اللاعب صاحب الجهاز)
-        foreach (Transform child in miniMapCanvas) {
-            if (child.name == "EnemyDot") Destroy(child.gameObject);
-        }
-
-        foreach (PlayerMove p in allPlayers)
-        {
-            if (p == this) continue; // تخطي نفسك لأن نقطتك ثابتة في المركز
-
-            // حساب المسافة بينك وبين اللاعب الآخر
+        PlayerMove[] players = GameObject.FindObjectsByType<PlayerMove>(FindObjectsSortMode.None);
+        foreach (Transform child in miniMapCanvas) { if (child.name == "ED") Destroy(child.gameObject); }
+        foreach (PlayerMove p in players) {
+            if (p == this) continue;
             Vector3 diff = p.transform.position - transform.position;
             Vector2 mapPos = new Vector2(diff.x, diff.z) * mapScale;
-
-            // إذا كان اللاعب داخل نطاق الخريطة، ارسمه
-            if (mapPos.magnitude < 70f)
-            {
-                GameObject dot = new GameObject("EnemyDot", typeof(RectTransform), typeof(Image));
+            if (mapPos.magnitude < 55f) {
+                GameObject dot = new GameObject("ED", typeof(RectTransform), typeof(Image));
                 dot.transform.SetParent(miniMapCanvas.transform, false);
-                RectTransform dotRt = dot.GetComponent<RectTransform>();
-                dotRt.anchoredPosition = mapPos;
-                dotRt.sizeDelta = new Vector2(8, 8);
+                RectTransform drt = dot.GetComponent<RectTransform>();
+                drt.anchoredPosition = mapPos; drt.sizeDelta = new Vector2(6, 6);
                 dot.GetComponent<Image>().color = Color.red;
             }
         }
     }
 
-    // --- بقية الدوال (Emoji, Flight UI, Buttons) تبقى كما هي مع تحديث بسيط للأماكن ---
-    
-    void CreateHorizontalEmojiMenu()
-    {
+    void CreateHorizontalEmojiMenu() {
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
-        string[] myEmojis = { "IMG_0354", "IMG_1097", "IMG_1609", "IMG_1652", "IMG_1653", "IMG_1911" }; 
-        string[] emojiLabels = { "😊", "🌹", "🤔", "🇸🇾", "🫡", "👍" };
-        for (int i = 0; i < myEmojis.Length; i++) {
-            string fileName = myEmojis[i];
-            float xPos = (i - (myEmojis.Length / 2.0f) + 0.5f) * 55f;
-            Vector2 topCenter = new Vector2(0.5f, 1f);
-            GameObject btn = CreateButton(canvas, "Btn_" + i, emojiLabels[i], new Vector2(xPos, -25), topCenter, topCenter, topCenter, new Vector2(50, 50)); 
-            btn.GetComponent<Button>().onClick.AddListener(() => RequestEmojiServerRpc(fileName));
+        string[] emojis = { "IMG_0354", "IMG_1097", "IMG_1609", "IMG_1652", "IMG_1653", "IMG_1911" }; 
+        string[] labels = { "😊", "🌹", "🤔", "🇸🇾", "🫡", "👍" };
+        for (int i = 0; i < emojis.Length; i++) {
+            string f = emojis[i];
+            float x = (i - (emojis.Length / 2.0f) + 0.5f) * 55f;
+            Vector2 tc = new Vector2(0.5f, 1f);
+            GameObject btn = CreateButton(canvas, "B"+i, labels[i], new Vector2(x, -25), tc, tc, tc, new Vector2(50, 50)); 
+            btn.GetComponent<Button>().onClick.AddListener(() => RequestEmojiServerRpc(f));
         }
     }
 
@@ -191,30 +177,24 @@ public class PlayerMove : NetworkBehaviour
         }
     }
 
-    void CreateFlightUI() {
-        Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
-        Vector2 br = new Vector2(1f, 0f);
-        GameObject up = CreateButton(canvas, "Up", "↑", new Vector2(-25, 120), br, br, br, new Vector2(70, 70));
-        AddEventTrigger(up, EventTriggerType.PointerDown, () => vFlyInput = 1f);
-        AddEventTrigger(up, EventTriggerType.PointerUp, () => vFlyInput = 0f);
-        GameObject down = CreateButton(canvas, "Down", "↓", new Vector2(-25, 40), br, br, br, new Vector2(70, 70));
-        AddEventTrigger(down, EventTriggerType.PointerDown, () => vFlyInput = -1f);
-        AddEventTrigger(down, EventTriggerType.PointerUp, () => vFlyInput = 0f);
-    }
-
     GameObject CreateButton(Canvas canvas, string name, string label, Vector2 pos, Vector2 min, Vector2 max, Vector2 piv, Vector2 size) {
         GameObject b = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
         b.transform.SetParent(canvas.transform, false);
         RectTransform r = b.GetComponent<RectTransform>();
         r.anchorMin = min; r.anchorMax = max; r.pivot = piv; r.anchoredPosition = pos; r.sizeDelta = size;
-        b.GetComponent<Image>().color = new Color(0,0,0,0.5f);
-        GameObject tObj = new GameObject("T", typeof(Text));
-        tObj.transform.SetParent(b.transform, false);
-        Text t = tObj.GetComponent<Text>();
-        t.text = label; t.fontSize = 25; t.alignment = TextAnchor.MiddleCenter;
+        
+        // جعل الزر لا يحجب اللمس عما خلفه إلا في منطقة الصورة فقط
+        Image img = b.GetComponent<Image>();
+        img.color = new Color(0,0,0,0.5f);
+        img.raycastTarget = true; 
+
+        GameObject tO = new GameObject("T", typeof(Text));
+        tO.transform.SetParent(b.transform, false);
+        Text t = tO.GetComponent<Text>();
+        t.text = label; t.fontSize = 30; t.alignment = TextAnchor.MiddleCenter;
         t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         t.color = Color.white;
-        tObj.GetComponent<RectTransform>().sizeDelta = size;
+        tO.GetComponent<RectTransform>().sizeDelta = size;
         return b;
     }
 
