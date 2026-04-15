@@ -24,15 +24,12 @@ public class PlayerMove : NetworkBehaviour
     private RectTransform miniMapCanvas;
     private float mapScale = 2.5f; 
 
-    // لنظام الإشعارات
     private static Text notificationText;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
         deviceIP = GetDeviceIP();
-        
-        // استبدال أي رمز أبل قديم بـ تفاحة خضراء أو إضافة التفاحة بجانب اسم المطور
         deviceName = SystemInfo.deviceName;
 
         CreateAdvancedNameTag();
@@ -44,7 +41,6 @@ public class PlayerMove : NetworkBehaviour
             CreateHorizontalEmojiMenu();
             CreateMiniMapUI();
             CreateNotificationUI();
-            // إرسال إشعار دخول للجميع
             NotifyServerRpc(deviceName + " Joined the world! 🍏");
         }
     }
@@ -53,15 +49,16 @@ public class PlayerMove : NetworkBehaviour
     {
         GameObject pivot = new GameObject("PlayerInfoPivot");
         pivot.transform.SetParent(this.transform);
-        pivot.transform.localPosition = new Vector3(0, 0.012f, 0); 
+        // رفعنا نقطة الارتكاز قليلاً للأعلى عن جسم اللاعب
+        pivot.transform.localPosition = new Vector3(0, 0.015f, 0); 
 
         float fontScale = IsOwner ? 0.0035f : 0.007f;
         int fontSize = IsOwner ? 35 : 65;
 
-        // 1. نص الـ IP
+        // 1. نص الـ IP (تم إنزاله للأسفل لزيادة المسافة)
         GameObject ipObj = new GameObject("IPAddress", typeof(TextMesh));
         ipObj.transform.SetParent(pivot.transform);
-        ipObj.transform.localPosition = Vector3.zero;
+        ipObj.transform.localPosition = new Vector3(0, -0.004f, 0); // مسافة كافية تحت الاسم
         ipObj.transform.localScale = new Vector3(fontScale, fontScale, fontScale); 
         ipTextMesh = ipObj.GetComponent<TextMesh>();
         ipTextMesh.fontSize = fontSize;
@@ -69,25 +66,22 @@ public class PlayerMove : NetworkBehaviour
         ipTextMesh.color = Color.yellow; 
         ipTextMesh.text = deviceIP;
 
-        // 2. اسم الجهاز (مع التفاحة الخضراء للمطور)
+        // 2. اسم الجهاز (في المنتصف)
         GameObject nameObj = new GameObject("DeviceName", typeof(TextMesh));
         nameObj.transform.SetParent(pivot.transform);
-        nameObj.transform.localPosition = new Vector3(0, 0.0055f, 0); 
+        nameObj.transform.localPosition = Vector3.zero; 
         nameObj.transform.localScale = new Vector3(fontScale * 1.1f, fontScale * 1.1f, fontScale * 1.1f); 
         deviceNameTextMesh = nameObj.GetComponent<TextMesh>();
         deviceNameTextMesh.fontSize = fontSize + 10;
         deviceNameTextMesh.fontStyle = FontStyle.Bold;
         deviceNameTextMesh.anchor = TextAnchor.MiddleCenter;
         deviceNameTextMesh.color = IsOwner ? new Color(0, 1, 1, 0.8f) : Color.white; 
-        
-        // وضع التفاحة الخضراء 🍏 بجانب اسم المطور
-        string displayName = (IsOwner ? "🍏 [Dev] " : "") + deviceName;
-        deviceNameTextMesh.text = displayName;
+        deviceNameTextMesh.text = (IsOwner ? "🍏 [Dev] " : "") + deviceName;
 
-        // 3. الملصق
+        // 3. الملصق (تم رفعه للأعلى لزيادة المسافة)
         GameObject spriteObj = new GameObject("EmojiSprite", typeof(SpriteRenderer));
         spriteObj.transform.SetParent(pivot.transform);
-        spriteObj.transform.localPosition = new Vector3(0, 0.013f, 0); 
+        spriteObj.transform.localPosition = new Vector3(0, 0.008f, 0); // مسافة كافية فوق الاسم
         spriteObj.transform.localScale = new Vector3(0.06f, 0.06f, 0.06f); 
         emojiSpriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
         emojiSpriteRenderer.sortingOrder = 100;
@@ -95,7 +89,6 @@ public class PlayerMove : NetworkBehaviour
         pivot.AddComponent<FaceCamera>();
     }
 
-    // --- نظام الإشعارات ---
     void CreateNotificationUI() {
         if (notificationText != null) return;
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
@@ -106,7 +99,6 @@ public class PlayerMove : NetworkBehaviour
         rt.anchorMax = new Vector2(0.5f, 1f);
         rt.anchoredPosition = new Vector2(0, -80);
         rt.sizeDelta = new Vector2(600, 50);
-        
         notificationText = notifyObj.GetComponent<Text>();
         notificationText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         notificationText.fontSize = 22;
@@ -123,16 +115,14 @@ public class PlayerMove : NetworkBehaviour
         notificationText.text = "";
     }
 
-    // --- بقية الدوال (Flight, MiniMap, Emoji) ---
-
     void CreateFlightUI() {
         Canvas canvas = GameObject.FindFirstObjectByType<Canvas>();
         Vector2 br = new Vector2(1f, 0f);
-        float btnS = 85f; float offsetX = -100f; 
-        GameObject up = CreateButton(canvas, "Up", "↑", new Vector2(offsetX, 180), br, br, br, new Vector2(btnS, btnS));
+        float btnS = 90f; float offsetX = -110f; 
+        GameObject up = CreateButton(canvas, "Up", "↑", new Vector2(offsetX, 190), br, br, br, new Vector2(btnS, btnS));
         AddEventTrigger(up, EventTriggerType.PointerDown, () => vFlyInput = 1f);
         AddEventTrigger(up, EventTriggerType.PointerUp, () => vFlyInput = 0f);
-        GameObject down = CreateButton(canvas, "Down", "↓", new Vector2(offsetX, 70), br, br, br, new Vector2(btnS, btnS));
+        GameObject down = CreateButton(canvas, "Down", "↓", new Vector2(offsetX, 80), br, br, br, new Vector2(btnS, btnS));
         AddEventTrigger(down, EventTriggerType.PointerDown, () => vFlyInput = -1f);
         AddEventTrigger(down, EventTriggerType.PointerUp, () => vFlyInput = 0f);
     }
@@ -186,9 +176,9 @@ public class PlayerMove : NetworkBehaviour
         string[] labels = { "😊", "🌹", "🤔", "🇸🇾", "🫡", "👍" };
         for (int i = 0; i < emojis.Length; i++) {
             string f = emojis[i];
-            float x = (i - (emojis.Length / 2.0f) + 0.5f) * 55f;
+            float x = (i - (emojis.Length / 2.0f) + 0.5f) * 60f;
             Vector2 tc = new Vector2(0.5f, 1f);
-            GameObject btn = CreateButton(canvas, "B"+i, labels[i], new Vector2(x, -25), tc, tc, tc, new Vector2(50, 50)); 
+            GameObject btn = CreateButton(canvas, "B"+i, labels[i], new Vector2(x, -30), tc, tc, tc, new Vector2(55, 55)); 
             btn.GetComponent<Button>().onClick.AddListener(() => RequestEmojiServerRpc(f));
         }
     }
