@@ -1,8 +1,6 @@
 name: Unity Android CI 🚀
 
 on: workflow_dispatch
-  
-  
 
 jobs:
   build:
@@ -36,28 +34,14 @@ jobs:
         androidAppBundle: false
         buildName: MyGame
         buildsPath: build
+        # إعدادات التوقيع باستخدام الملف الذي ولدته
+        androidKeystoreName: ali_world.keystore
+        androidKeystorePass: "اكتب_كلمة_السر_هنا"
+        androidKeyaliasName: ali_dev
+        androidKeyaliasPass: "اكتب_كلمة_السر_هنا"
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: Android-APK
         path: build/Android/*.apk
-
-    - name: Build AAB
-      uses: game-ci/unity-builder@v4
-      env:
-        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      with:
-        unityVersion: 6000.4.0f1
-        targetPlatform: Android
-        androidAppBundle: true
-        buildName: MyGame
-        buildsPath: build
-
-    - name: Upload AAB
-      uses: actions/upload-artifact@v4
-      with:
-        name: Android-AAB
-        path: build/Android/*.aab
