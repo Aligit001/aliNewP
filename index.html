@@ -3,24 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Install</title>
+    <title>تحميل التطبيق - الهوية البصرية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* إضافة خط قمرة - ستحتاج إلى تضمين ملف الخط الفعلي إذا كان متوفراً لديك */
-        @font-face {
-            font-family: 'Qomra';
-            src: local('Qomra'), local('قمرة');
-            /* src: url('path/to/qomra-font.woff2') format('woff2'); */
-        }
-
         :root {
-            /* ألوان الهوية البصرية السورية 2025 */
-            --sy-bg: #edebe0; /* Golden Wheat - فاتح للخلفية */
-            --sy-text-main: #002623; /* Forest - داكن للنصوص الأساسية */
-            --sy-text-sub: #428177; /* Forest - فاتح للنصوص الفرعية */
-            --sy-button: #4a151e; /* Deep Umber - أحمر متوسط للأزرار */
-            --sy-button-active: #260f14; /* Deep Umber - داكن عند الضغط */
-            --sy-details: #988561; /* Golden Wheat - داكن للتفاصيل */
-            --card-bg: #FFFFFF;
+            /* لوحة ألوان الوزارات الرسمية 2025 */
+            --sy-forest-dark: #002623;   /* الأخضر العميق */
+            --sy-forest-mid: #054239;    /* الأخضر المتوسط */
+            --sy-wheat-gold: #b9a779;    /* الذهبي السوري */
+            --sy-wheat-light: #edebe0;   /* لون الورق/الفانيليا */
+            --sy-umber: #4a151e;         /* العنابي العميق */
         }
 
         body {
@@ -30,75 +23,83 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: var(--sy-bg);
-            /* استخدام خط قمرة كخيار أول */
-            font-family: 'Qomra', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--sy-wheat-light); /* خلفية فاتحة مريحة */
+            font-family: 'Cairo', 'Qomra', sans-serif; /* Cairo كبديل شغال و Qomra كأصل */
             -webkit-font-smoothing: antialiased;
         }
 
         .app-card {
-            background: var(--card-bg);
-            border-radius: 32px;
+            background: #FFFFFF;
+            border-radius: 24px;
             padding: 40px;
-            width: 280px;
-            box-shadow: 0 20px 40px rgba(0, 38, 35, 0.08), 0 1px 3px rgba(0, 38, 35, 0.04); /* ظل مستوحى من لون Forest */
+            width: 300px;
+            /* ظل ناعم باللون الأخضر الغامق */
+            box-shadow: 0 15px 35px rgba(0, 38, 35, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+            border-top: 6px solid var(--sy-forest-dark); /* شريط علوي بلون الوزارة */
         }
 
         .app-icon {
-            width: 118px;
-            height: 118px;
-            background-color: #b9a779; /* لون بديل قبل تحميل الصورة */
-            border-radius: 27px;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            width: 110px;
+            height: 110px;
+            background-color: var(--sy-wheat-light);
+            border-radius: 25px;
+            margin-bottom: 25px;
             background-image: url('https://syrian.zone/syid/materials/%D8%A7%D9%84%D8%B9%D9%84%D9%85%20%D8%A7%D9%84%D8%B3%D9%88%D8%B1%D9%8A%20%D8%A8%D8%A7%D9%84%D9%86%D8%B3%D8%A8%20%D8%A7%D9%84%D8%B5%D8%AD%D9%8A%D8%AD%D8%A9.png');
-            background-size: cover;
+            background-size: 90%; /* تصغير بسيط للعلم ليظهر كأيقونة */
+            background-repeat: no-repeat;
             background-position: center;
+            border: 1px solid rgba(0, 38, 35, 0.1);
         }
 
         h1 {
-            margin: 0 0 6px 0;
-            font-size: 24px;
+            margin: 0 0 8px 0;
+            font-size: 22px;
             font-weight: 700;
-            color: var(--sy-text-main);
-            letter-spacing: -0.015em;
+            color: var(--sy-forest-dark);
         }
 
         p.developer {
-            margin: 0 0 30px 0;
-            font-size: 15px;
+            margin: 0 0 35px 0;
+            font-size: 14px;
             font-weight: 400;
-            color: var(--sy-text-sub);
-            letter-spacing: -0.01em;
+            color: var(--sy-forest-mid);
+            opacity: 0.8;
         }
 
         .get-button {
-            background-color: var(--sy-button);
-            color: #FFFFFF;
+            background-color: var(--sy-forest-dark); /* زر رسمي باللون الأخضر الوزاري */
+            color: var(--sy-wheat-light);
             text-decoration: none;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 600;
-            padding: 12px 42px;
-            border-radius: 24px;
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 12px;
             display: inline-block;
-            transition: all 0.2s ease;
-            letter-spacing: -0.02em;
+            transition: all 0.3s ease;
+            border: 1px solid var(--sy-forest-dark);
+        }
+
+        .get-button:hover {
+            background-color: var(--sy-forest-mid);
+            box-shadow: 0 4px 12px rgba(5, 66, 57, 0.2);
         }
 
         .get-button:active {
-            transform: scale(0.96);
-            background-color: var(--sy-button-active);
+            transform: scale(0.98);
         }
 
         .details {
-            margin-top: 24px;
-            font-size: 13px;
-            color: var(--sy-details);
-            font-weight: 500;
+            margin-top: 25px;
+            font-size: 12px;
+            color: var(--sy-wheat-gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -106,12 +107,12 @@
 
     <div class="app-card">
         <div class="app-icon"></div>
-        <h1>المشروع</h1>
-        <p class="developer">أكشن ومغامرات</p>
+        <h1>تطبيق المشاريع</h1>
+        <p class="developer">بوابة الخدمات الرقمية</p>
         
-        <a href="https://productionresultssa18.blob.core.windows.net/actions-results/4ce683c5-4d2d-4ebd-986f-13312fc461d2/workflow-job-run-841c02c9-e3db-5931-b35c-82085be1459a/artifacts/7c0a1cc07aa8957b3c563e30aec016a323af891f0aa930e0944c76074da3d7ad.zip?rscd=attachment%3B+filename%3D%22Android-APK.zip%22&rsct=application%2Fzip&se=2026-04-29T14%3A20%3A06Z&sig=HZowO98KYhi%2BBdgeuaT%2BLTHZ7KDM5w%2BoOuTr0Z6WmC4%3D&ske=2026-04-29T17%3A18%3A56Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2026-04-29T13%3A18%3A56Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-11-05&sp=r&spr=https&sr=b&st=2026-04-29T14%3A10%3A01Z&sv=2025-11-05" class="get-button">تحميل</a>
+        <a href="https://productionresultssa18.blob.core.windows.net/actions-results/4ce683c5-4d2d-4ebd-986f-13312fc461d2/workflow-job-run-841c02c9-e3db-5931-b35c-82085be1459a/artifacts/7c0a1cc07aa8957b3c563e30aec016a323af891f0aa930e0944c76074da3d7ad.zip?..." class="get-button">تحميل APK</a>
         
-        <div class="details">تم التطوير بواسطة علي</div>
+        <div class="details">تطوير: علي | 2025</div>
     </div>
 
 </body>
