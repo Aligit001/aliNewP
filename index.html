@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Install</title>
     <style>
-        /* ألوان ومعايير أبل الرسمية */
         :root {
-            --apple-bg: #F5F5F7; /* خلفية أبل الرمادية الفاتحة الشهيرة */
-            --apple-text: #1D1D1F; /* الأسود الخاص بنصوص أبل */
-            --apple-subtitle: #86868B; /* لون النصوص الفرعية */
-            --apple-blue: #0071E3; /* لون أزرار أبل */
+            --apple-bg: #F5F5F7;
+            --apple-text: #1D1D1F;
+            --apple-subtitle: #86868B;
+            --apple-blue: #0071E3;
         }
 
         body {
@@ -21,12 +20,10 @@
             align-items: center;
             height: 100vh;
             background-color: var(--apple-bg);
-            /* خطوط أبل الرسمية */
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased; /* لجعل الخطوط ناعمة جداً كالآيباد */
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* البطاقة البيضاء النظيفة */
         .app-card {
             background: #FFFFFF;
             border-radius: 32px;
@@ -39,15 +36,15 @@
             text-align: center;
         }
 
-        /* الأيقونة بحواف Squircle المطابقة لنسبة أبل */
         .app-icon {
             width: 118px;
             height: 118px;
             background-color: #E5E5EA;
-            border-radius: 27px; /* النسبة الرياضية الدقيقة لمنحنيات أبل */
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); /* إطار داخلي خفيف جداً */
+            border-radius: 27px;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
             margin-bottom: 20px;
-            background-image: url('icon.png');
+            /* تم تحديث الرابط هنا */
+            background-image: url('https://syrian.zone/syid/materials/%D8%A7%D9%84%D8%B9%D9%84%D9%85%20%D8%A7%D9%84%D8%B3%D9%88%D8%B1%D9%8A%20%D8%A8%D8%A7%D9%84%D9%86%D8%B3%D8%A8%20%D8%A7%D9%84%D8%B5%D8%AD%D9%8A%D8%AD%D8%A9.png');
             background-size: cover;
             background-position: center;
         }
@@ -68,7 +65,6 @@
             letter-spacing: -0.01em;
         }
 
-        /* زر الـ GET المطابق لمتجر التطبيقات */
         .get-button {
             background-color: var(--apple-blue);
             color: #FFFFFF;
@@ -76,7 +72,7 @@
             font-size: 17px;
             font-weight: 600;
             padding: 12px 42px;
-            border-radius: 24px; /* شكل الحبة Pill Shape */
+            border-radius: 24px;
             display: inline-block;
             transition: all 0.2s ease;
             letter-spacing: -0.02em;
@@ -84,7 +80,7 @@
 
         .get-button:active {
             transform: scale(0.96);
-            background-color: #005BB5; /* لون أغمق عند الضغط */
+            background-color: #005BB5;
         }
 
         .details {
