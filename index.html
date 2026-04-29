@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Install</title>
+    <title>بوابة تحميل التطبيق</title>
     <style>
-        /* إضافة خط قمرة - ستحتاج إلى تضمين ملف الخط الفعلي إذا كان متوفراً لديك */
+        /* ربط خط SF Arabic المرفوع على مستودع جيت هب */
         @font-face {
-            font-family: 'Qomra';
-            src: local('Qomra'), local('قمرة');
-            /* src: url('path/to/qomra-font.woff2') format('woff2'); */
+            font-family: 'SF-Arabic-Rounded';
+            src: url('SFArabicRounded-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
         }
 
         :root {
             /* ألوان الهوية البصرية السورية 2025 */
-            --sy-bg: #edebe0; /* Golden Wheat - فاتح للخلفية */
-            --sy-text-main: #002623; /* Forest - داكن للنصوص الأساسية */
-            --sy-text-sub: #428177; /* Forest - فاتح للنصوص الفرعية */
-            --sy-button: #4a151e; /* Deep Umber - أحمر متوسط للأزرار */
-            --sy-button-active: #260f14; /* Deep Umber - داكن عند الضغط */
-            --sy-details: #988561; /* Golden Wheat - داكن للتفاصيل */
+            --sy-bg: #edebe0; 
+            --sy-text-main: #002623; 
+            --sy-text-sub: #428177; 
+            --sy-button-apk: #4a151e; /* العنابي للهوية السورية */
+            --sy-button-ios: #1d1d1f; /* الأسود الرسمي لنسخة iOS */
+            --sy-details: #988561; 
             --card-bg: #FFFFFF;
         }
 
@@ -31,8 +32,8 @@
             align-items: center;
             height: 100vh;
             background-color: var(--sy-bg);
-            /* استخدام خط قمرة كخيار أول */
-            font-family: 'Qomra', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            /* الخط الأساسي هو الذي رفعته أنت */
+            font-family: 'SF-Arabic-Rounded', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -41,7 +42,7 @@
             border-radius: 32px;
             padding: 40px;
             width: 280px;
-            box-shadow: 0 20px 40px rgba(0, 38, 35, 0.08), 0 1px 3px rgba(0, 38, 35, 0.04); /* ظل مستوحى من لون Forest */
+            box-shadow: 0 20px 40px rgba(0, 38, 35, 0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -51,9 +52,8 @@
         .app-icon {
             width: 118px;
             height: 118px;
-            background-color: #b9a779; /* لون بديل قبل تحميل الصورة */
+            background-color: #b9a779;
             border-radius: 27px;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
             margin-bottom: 20px;
             background-image: url('https://syrian.zone/syid/materials/%D8%A7%D9%84%D8%B9%D9%84%D9%85%20%D8%A7%D9%84%D8%B3%D9%88%D8%B1%D9%8A%20%D8%A8%D8%A7%D9%84%D9%86%D8%B3%D8%A8%20%D8%A7%D9%84%D8%B5%D8%AD%D9%8A%D8%AD%D8%A9.png');
             background-size: cover;
@@ -65,33 +65,47 @@
             font-size: 24px;
             font-weight: 700;
             color: var(--sy-text-main);
-            letter-spacing: -0.015em;
         }
 
         p.developer {
-            margin: 0 0 30px 0;
+            margin: 0 0 25px 0;
             font-size: 15px;
-            font-weight: 400;
+            font-weight: 500;
             color: var(--sy-text-sub);
-            letter-spacing: -0.01em;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
         }
 
         .get-button {
-            background-color: var(--sy-button);
             color: #FFFFFF;
             text-decoration: none;
             font-size: 17px;
             font-weight: 600;
-            padding: 12px 42px;
+            padding: 13px 0;
             border-radius: 24px;
-            display: inline-block;
+            display: block;
             transition: all 0.2s ease;
-            letter-spacing: -0.02em;
+            width: 100%;
+        }
+
+        /* زر الأندرويد بالعنابي */
+        .apk {
+            background-color: var(--sy-button-apk);
+        }
+
+        /* زر الأيفون بالأسود */
+        .ios {
+            background-color: var(--sy-button-ios);
         }
 
         .get-button:active {
             transform: scale(0.96);
-            background-color: var(--sy-button-active);
+            opacity: 0.9;
         }
 
         .details {
@@ -106,12 +120,15 @@
 
     <div class="app-card">
         <div class="app-icon"></div>
-        <h1>Game</h1>
-        <p class="developer">تحميل APK</p>
+        <h1>اسم التطبيق</h1>
+        <p class="developer">بوابة التطبيقات السورية</p>
         
-        <a href="https://github.com/Aligit001/aliNewP/actions/runs/24972570601/artifacts/6652222496" class="get-button">Get</a>
+        <div class="button-container">
+            <a href="ضع_رابط_الأندرويد_هنا" class="get-button apk">تحميل APK</a>
+            <a href="ضع_رابط_الأيفون_هنا" class="get-button ios">تحميل iOS</a>
+        </div>
         
-        <div class="details"> علي developed by </div>
+        <div class="details">تطوير: علي | 2025</div>
     </div>
 
 </body>
