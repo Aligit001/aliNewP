@@ -3,19 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحميل التطبيق الرسمي - بوابة الخدمات</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <title>App Install</title>
     <style>
+        /* إضافة خط قمرة - ستحتاج إلى تضمين ملف الخط الفعلي إذا كان متوفراً لديك */
+        @font-face {
+            font-family: 'Qomra';
+            src: local('Qomra'), local('قمرة');
+            /* src: url('path/to/qomra-font.woff2') format('woff2'); */
+        }
+
         :root {
-            /* لوحة ألوان مستوحاة بدقة من صورة وزارة الخارجية image_2.png */
-            --gov-bg: #F7F8FA;         /* رمادي فاتح جداً للخلفية */
-            --gov-card-bg: #FFFFFF;    /* أبيض ناصع للبطاقة */
-            --gov-text-dark: #00443D;  /* أخضر داكن جداً رسمي للنصوص الرئيسية */
-            --gov-text-sub: #666666;   /* رمادي متوسط للنصوص الفرعية */
-            --gov-button: #1D1D1F;     /* أسود عميق للأزرار */
-            --gov-border: #E1E4E8;     /* رمادي فاتح جداً للحدود */
-            --gov-accent: #DAA520;     /* ذهبي (لون الشعار) للتفاصيل الدقيقة */
+            /* ألوان الهوية البصرية السورية 2025 */
+            --sy-bg: #edebe0; /* Golden Wheat - فاتح للخلفية */
+            --sy-text-main: #002623; /* Forest - داكن للنصوص الأساسية */
+            --sy-text-sub: #428177; /* Forest - فاتح للنصوص الفرعية */
+            --sy-button: #4a151e; /* Deep Umber - أحمر متوسط للأزرار */
+            --sy-button-active: #260f14; /* Deep Umber - داكن عند الضغط */
+            --sy-details: #988561; /* Golden Wheat - داكن للتفاصيل */
+            --card-bg: #FFFFFF;
         }
 
         body {
@@ -25,145 +30,88 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: var(--gov-bg);
-            font-family: 'Noto Kufi Arabic', sans-serif;
+            background-color: var(--sy-bg);
+            /* استخدام خط قمرة كخيار أول */
+            font-family: 'Qomra', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* حاوية البطاقة البيضاء النظيفة بحواف ناعمة */
         .app-card {
-            background: var(--gov-card-bg);
-            border-radius: 20px;
+            background: var(--card-bg);
+            border-radius: 32px;
             padding: 40px;
-            width: 320px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* ظل خفيف جداً */
+            width: 280px;
+            box-shadow: 0 20px 40px rgba(0, 38, 35, 0.08), 0 1px 3px rgba(0, 38, 35, 0.04); /* ظل مستوحى من لون Forest */
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            position: relative;
         }
 
-        /* خط زخرفي علوي دقيق بلون الوزارة */
-        .card-decorator {
-            position: absolute;
-            top: -2px;
-            left: 20px;
-            right: 20px;
-            height: 4px;
-            background-color: var(--gov-text-dark);
-            border-radius: 4px 4px 0 0;
-            opacity: 0.8;
-        }
-
-        /* الأيقونة المستوحاة من شعار الوزارة */
         .app-icon {
-            width: 120px;
-            height: 120px;
-            background-color: transparent;
-            border-radius: 25px;
-            margin-bottom: 25px;
-            /* استخدام العلم كأيقونة في المنتصف */
+            width: 118px;
+            height: 118px;
+            background-color: #b9a779; /* لون بديل قبل تحميل الصورة */
+            border-radius: 27px;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
             background-image: url('https://syrian.zone/syid/materials/%D8%A7%D9%84%D8%B9%D9%84%D9%85%20%D8%A7%D9%84%D8%B3%D9%88%D8%B1%D9%8A%20%D8%A8%D8%A7%D9%84%D9%86%D8%B3%D8%A8%20%D8%A7%D9%84%D8%B5%D8%AD%D9%8A%D8%AD%D8%A9.png');
-            background-size: 85%;
-            background-repeat: no-repeat;
+            background-size: cover;
             background-position: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* ظل خفيف جداً للأيقونة */
         }
 
         h1 {
-            margin: 0 0 10px 0;
-            font-size: 20px;
+            margin: 0 0 6px 0;
+            font-size: 24px;
             font-weight: 700;
-            color: var(--gov-text-dark);
+            color: var(--sy-text-main);
+            letter-spacing: -0.015em;
         }
 
         p.developer {
-            margin: 0 0 35px 0;
-            font-size: 14px;
+            margin: 0 0 30px 0;
+            font-size: 15px;
             font-weight: 400;
-            color: var(--gov-text-sub);
+            color: var(--sy-text-sub);
+            letter-spacing: -0.01em;
         }
 
-        /* الزر الأسود العميق المطابق لزر "عرض الخبر" */
         .get-button {
-            background-color: var(--gov-button);
+            background-color: var(--sy-button);
             color: #FFFFFF;
             text-decoration: none;
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 600;
-            width: 100%;
-            padding: 15px 0;
-            border-radius: 12px;
+            padding: 12px 42px;
+            border-radius: 24px;
             display: inline-block;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        .get-button:hover {
-            background-color: #333333;
+            letter-spacing: -0.02em;
         }
 
         .get-button:active {
-            transform: scale(0.98);
+            transform: scale(0.96);
+            background-color: var(--sy-button-active);
         }
 
-        /* شريط التفاصيل السفلي المصمم ليبدو مثل شريط البحث في صورة الوزارة */
-        .details-wrapper {
-            margin-top: 30px;
-            width: 100%;
-            border: 1px solid var(--gov-border);
-            border-radius: 12px;
-            padding: 10px 15px;
-            background-color: var(--gov-card-bg);
-            display: flex;
-            align-items: center;
-            color: var(--gov-text-sub);
-            font-size: 12px;
+        .details {
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--sy-details);
+            font-weight: 500;
         }
-
-        /* أيقونة بحث رمزية كما في الصورة */
-        .details-icon {
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--gov-border);
-            border-radius: 50%;
-            margin-left: 10px;
-            position: relative;
-        }
-        .details-icon::after {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: -3px;
-            width: 6px;
-            height: 2px;
-            background-color: var(--gov-border);
-            transform: rotate(45deg);
-        }
-
-        .details-text {
-            font-weight: 400;
-        }
-
     </style>
 </head>
 <body>
 
     <div class="app-card">
-        <div class="card-decorator"></div>
-        
         <div class="app-icon"></div>
+        <h1>Game</h1>
+        <p class="developer">🇸🇾</p>
         
-        <h1>تطبيق المشاريع الرقمي</h1>
-        <p class="developer">بوابة الخدمات الحكومية الإلكترونية</p>
+        <a href="https://github.com/Aligit001/aliNewP/actions/runs/24972570601/artifacts/6652222496" class="get-button">Get</a>
         
-        <a href="https://productionresultssa18.blob.core.windows.net/actions-results/4ce683c5-4d2d-4ebd-986f-13312fc461d2/workflow-job-run-841c02c9-e3db-5931-b35c-82085be1459a/artifacts/7c0a1cc07aa8957b3c563e30aec016a323af891f0aa930e0944c76074da3d7ad.zip?..." class="get-button">تحميل الملف (APK)</a>
-        
-        <div class="details-wrapper">
-            <div class="details-icon"></div>
-            <div class="details-text">تطوير: علي | 2025</div>
-        </div>
+        <div class="details"> developed by علي </div>
     </div>
 
 </body>
