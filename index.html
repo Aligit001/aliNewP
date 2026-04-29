@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحميل التطبيق - الهوية البصرية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>تحميل التطبيق الرسمي - بوابة الخدمات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* لوحة ألوان الوزارات الرسمية 2025 */
-            --sy-forest-dark: #002623;   /* الأخضر العميق */
-            --sy-forest-mid: #054239;    /* الأخضر المتوسط */
-            --sy-wheat-gold: #b9a779;    /* الذهبي السوري */
-            --sy-wheat-light: #edebe0;   /* لون الورق/الفانيليا */
-            --sy-umber: #4a151e;         /* العنابي العميق */
+            /* لوحة ألوان مستوحاة بدقة من صورة وزارة الخارجية image_2.png */
+            --gov-bg: #F7F8FA;         /* رمادي فاتح جداً للخلفية */
+            --gov-card-bg: #FFFFFF;    /* أبيض ناصع للبطاقة */
+            --gov-text-dark: #00443D;  /* أخضر داكن جداً رسمي للنصوص الرئيسية */
+            --gov-text-sub: #666666;   /* رمادي متوسط للنصوص الفرعية */
+            --gov-button: #1D1D1F;     /* أسود عميق للأزرار */
+            --gov-border: #E1E4E8;     /* رمادي فاتح جداً للحدود */
+            --gov-accent: #DAA520;     /* ذهبي (لون الشعار) للتفاصيل الدقيقة */
         }
 
         body {
@@ -23,96 +25,145 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: var(--sy-wheat-light); /* خلفية فاتحة مريحة */
-            font-family: 'Cairo', 'Qomra', sans-serif; /* Cairo كبديل شغال و Qomra كأصل */
+            background-color: var(--gov-bg);
+            font-family: 'Noto Kufi Arabic', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
+        /* حاوية البطاقة البيضاء النظيفة بحواف ناعمة */
         .app-card {
-            background: #FFFFFF;
-            border-radius: 24px;
+            background: var(--gov-card-bg);
+            border-radius: 20px;
             padding: 40px;
-            width: 300px;
-            /* ظل ناعم باللون الأخضر الغامق */
-            box-shadow: 0 15px 35px rgba(0, 38, 35, 0.1);
+            width: 320px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* ظل خفيف جداً */
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            border-top: 6px solid var(--sy-forest-dark); /* شريط علوي بلون الوزارة */
+            position: relative;
         }
 
+        /* خط زخرفي علوي دقيق بلون الوزارة */
+        .card-decorator {
+            position: absolute;
+            top: -2px;
+            left: 20px;
+            right: 20px;
+            height: 4px;
+            background-color: var(--gov-text-dark);
+            border-radius: 4px 4px 0 0;
+            opacity: 0.8;
+        }
+
+        /* الأيقونة المستوحاة من شعار الوزارة */
         .app-icon {
-            width: 110px;
-            height: 110px;
-            background-color: var(--sy-wheat-light);
+            width: 120px;
+            height: 120px;
+            background-color: transparent;
             border-radius: 25px;
             margin-bottom: 25px;
+            /* استخدام العلم كأيقونة في المنتصف */
             background-image: url('https://syrian.zone/syid/materials/%D8%A7%D9%84%D8%B9%D9%84%D9%85%20%D8%A7%D9%84%D8%B3%D9%88%D8%B1%D9%8A%20%D8%A8%D8%A7%D9%84%D9%86%D8%B3%D8%A8%20%D8%A7%D9%84%D8%B5%D8%AD%D9%8A%D8%AD%D8%A9.png');
-            background-size: 90%; /* تصغير بسيط للعلم ليظهر كأيقونة */
+            background-size: 85%;
             background-repeat: no-repeat;
             background-position: center;
-            border: 1px solid rgba(0, 38, 35, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* ظل خفيف جداً للأيقونة */
         }
 
         h1 {
-            margin: 0 0 8px 0;
-            font-size: 22px;
+            margin: 0 0 10px 0;
+            font-size: 20px;
             font-weight: 700;
-            color: var(--sy-forest-dark);
+            color: var(--gov-text-dark);
         }
 
         p.developer {
             margin: 0 0 35px 0;
             font-size: 14px;
             font-weight: 400;
-            color: var(--sy-forest-mid);
-            opacity: 0.8;
+            color: var(--gov-text-sub);
         }
 
+        /* الزر الأسود العميق المطابق لزر "عرض الخبر" */
         .get-button {
-            background-color: var(--sy-forest-dark); /* زر رسمي باللون الأخضر الوزاري */
-            color: var(--sy-wheat-light);
+            background-color: var(--gov-button);
+            color: #FFFFFF;
             text-decoration: none;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             width: 100%;
-            padding: 14px 0;
+            padding: 15px 0;
             border-radius: 12px;
             display: inline-block;
-            transition: all 0.3s ease;
-            border: 1px solid var(--sy-forest-dark);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
 
         .get-button:hover {
-            background-color: var(--sy-forest-mid);
-            box-shadow: 0 4px 12px rgba(5, 66, 57, 0.2);
+            background-color: #333333;
         }
 
         .get-button:active {
             transform: scale(0.98);
         }
 
-        .details {
-            margin-top: 25px;
+        /* شريط التفاصيل السفلي المصمم ليبدو مثل شريط البحث في صورة الوزارة */
+        .details-wrapper {
+            margin-top: 30px;
+            width: 100%;
+            border: 1px solid var(--gov-border);
+            border-radius: 12px;
+            padding: 10px 15px;
+            background-color: var(--gov-card-bg);
+            display: flex;
+            align-items: center;
+            color: var(--gov-text-sub);
             font-size: 12px;
-            color: var(--sy-wheat-gold);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
+
+        /* أيقونة بحث رمزية كما في الصورة */
+        .details-icon {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--gov-border);
+            border-radius: 50%;
+            margin-left: 10px;
+            position: relative;
+        }
+        .details-icon::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: -3px;
+            width: 6px;
+            height: 2px;
+            background-color: var(--gov-border);
+            transform: rotate(45deg);
+        }
+
+        .details-text {
+            font-weight: 400;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="app-card">
+        <div class="card-decorator"></div>
+        
         <div class="app-icon"></div>
-        <h1>تطبيق المشاريع</h1>
-        <p class="developer">بوابة الخدمات الرقمية</p>
         
-        <a href="https://productionresultssa18.blob.core.windows.net/actions-results/4ce683c5-4d2d-4ebd-986f-13312fc461d2/workflow-job-run-841c02c9-e3db-5931-b35c-82085be1459a/artifacts/7c0a1cc07aa8957b3c563e30aec016a323af891f0aa930e0944c76074da3d7ad.zip?..." class="get-button">تحميل APK</a>
+        <h1>تطبيق المشاريع الرقمي</h1>
+        <p class="developer">بوابة الخدمات الحكومية الإلكترونية</p>
         
-        <div class="details">تطوير: علي | 2025</div>
+        <a href="https://productionresultssa18.blob.core.windows.net/actions-results/4ce683c5-4d2d-4ebd-986f-13312fc461d2/workflow-job-run-841c02c9-e3db-5931-b35c-82085be1459a/artifacts/7c0a1cc07aa8957b3c563e30aec016a323af891f0aa930e0944c76074da3d7ad.zip?..." class="get-button">تحميل الملف (APK)</a>
+        
+        <div class="details-wrapper">
+            <div class="details-icon"></div>
+            <div class="details-text">تطوير: علي | 2025</div>
+        </div>
     </div>
 
 </body>
